@@ -10,7 +10,7 @@ st.set_page_config(page_title="Spider Spread - Painel de Sinais", layout="wide")
 # STRING DE CONEXÃO DA SUPABASE (CORRIGIDA)
 # ==========================================
 # Mudança para conexão direta sem caracteres especiais conflitantes na URL
-DB_URL_NUVEM = "postgres://postgres:Spider@Cmc5354@db.azyrogbqlgeknojszgua.supabase.co:5432/postgres"
+DB_URL_NUVEM = "postgres://postgres:Spider%40Cmc5354@db.azyrogbqlgeknojszgua.supabase.co:5432/postgres"
 
 # Definição da senha de acesso VIP do painel
 SENHA_CORRETA = "SpiderVIP2026"
