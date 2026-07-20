@@ -1,19 +1,12 @@
 import streamlit as st
 import pandas as pd
-import psycopg2
 import time
 
 # Configuração da página web
 st.set_page_config(page_title="Spider Spread - Painel de Sinais", layout="wide")
 
-# ==========================================
-# STRING DE CONEXÃO DA SUPABASE (CORRIGIDA)
-# ==========================================
-# Mudança para conexão direta sem caracteres especiais conflitantes na URL
-DB_URL_NUVEM = "postgres://postgres:Spider%40Cmc5354@db.azyrogbqlgeknojszgua.supabase.co:5432/postgres"
-
 # Definição da senha de acesso VIP do painel
-SENHA_CORRETA = "Spider@Cmc5354"
+SENHA_CORRETA = "SpiderVIP2026"
 
 if "autenticado" not in st.session_state:
     st.session_state.autenticado = False
@@ -47,7 +40,7 @@ if not st.session_state.autenticado:
                 time.sleep(1)
                 st.rerun()
             else:
-                st.error("❌ Senha incorreta! Caso tenha esquecido, entre em contato com o administrador.")
+                st.error("❌ Senha incorreta! Caso tenha esquecido, entre in contato com o administrador.")
     st.stop()
 
 # ==========================================
@@ -102,22 +95,21 @@ with st.sidebar:
     st.markdown("<div class='historico-carlos' translate='no'>📋 Histórico de Carlos Caldeira</div>", unsafe_allow_html=True)
 
 # ==========================================
-# FUNÇÕES DE BUSCA DE DADOS (SUPABASE NUVEM)
+# FUNÇÕES DE BUSCA DE DADOS (CONEXÃO SECRETA NATIVO)
 # ==========================================
 def carregar_sinais():
     try:
-        conn = psycopg2.connect(DB_URL_NUVEM)
-        df = pd.read_sql_query("SELECT data_alerta, ativo, direcao, rompimento, preco, volume FROM sinais ORDER BY id DESC", conn)
-        conn.close()
-        return df
+        # Usa o conector nativo ultra seguro do Streamlit Cloud conectado aos Secrets
+        conn = st.connection("postgresql", type="sql")
+        df = conn.query("SELECT data_alerta, ativo, direcao, rompimento, preco, volume FROM sinais ORDER BY id DESC", ttl="10s")
+        return pd.DataFrame(df)
     except Exception: return pd.DataFrame()
 
 def carregar_relatorios():
     try:
-        conn = psycopg2.connect(DB_URL_NUVEM)
-        df = pd.read_sql_query("SELECT id, data_relatorio, longs, shorts, total, detalhes FROM relatorios ORDER BY id DESC", conn)
-        conn.close()
-        return df
+        conn = st.connection("postgresql", type="sql")
+        df = conn.query("SELECT id, data_relatorio, longs, shorts, total, detalhes FROM relatorios ORDER BY id DESC", ttl="10s")
+        return pd.DataFrame(df)
     except Exception: return pd.DataFrame()
 
 # ==========================================
@@ -146,7 +138,7 @@ elif st.session_state.pagina_atual == "relatorios":
     if not df_repor.empty:
         datas_disponiveis = df_repor['data_relatorio'].tolist()
         data_selecionada = st.selectbox("📅 Selecione a data do relatório que deseja revisar:", datas_disponiveis)
-        linha_relatorio = df_repor[df_repor['data_relatorio'] == data_selecionada].iloc
+        linha_relatorio = df_repor[df_repor['data_relatorio'] == data_selecionada].iloc[0]
         
         col1, col2, col3 = st.columns(3)
         col1.metric("🟩 Sinais LONG", int(linha_relatorio['longs']))
