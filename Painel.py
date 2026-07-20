@@ -7,9 +7,10 @@ import time
 st.set_page_config(page_title="Spider Spread - Painel de Sinais", layout="wide")
 
 # ==========================================
-# STRING DE CONEXÃO DA SUPABASE (CONFIGURADA)
+# STRING DE CONEXÃO DA SUPABASE (CORRIGIDA)
 # ==========================================
-DB_URL_NUVEM = "postgresql://postgres:Spider%40Cmc5354@db.azyrogbqlgeknojszgua.supabase.co:5432/postgres"
+# Mudança para conexão direta sem caracteres especiais conflitantes na URL
+DB_URL_NUVEM = "postgres://postgres:Spider@Cmc5354@db.azyrogbqlgeknojszgua.supabase.co:5432/postgres"
 
 # Definição da senha de acesso VIP do painel
 SENHA_CORRETA = "SpiderVIP2026"
@@ -134,7 +135,7 @@ if st.session_state.pagina_atual == "alertas":
         df_sinais.columns = ["Data Alerta", "Nome do Ativo", "Direção", "Rompimento", "Preço", "Volume"]
         st.dataframe(df_sinais, use_container_width=True, hide_index=True)
     else:
-        st.info("Aguardando os sinais do robô na nuvem...")
+        st.info("Aguardando os novos sinais do robô na nuvem...")
 
 elif st.session_state.pagina_atual == "relatorios":
     st.markdown("<h1 style='color: #111111;'>Histórico de Relatórios Diários (21h)</h1>", unsafe_allow_html=True)
@@ -145,7 +146,7 @@ elif st.session_state.pagina_atual == "relatorios":
     if not df_repor.empty:
         datas_disponiveis = df_repor['data_relatorio'].tolist()
         data_selecionada = st.selectbox("📅 Selecione a data do relatório que deseja revisar:", datas_disponiveis)
-        linha_relatorio = df_repor[df_repor['data_relatorio'] == data_selecionada].iloc[0]
+        linha_relatorio = df_repor[df_repor['data_relatorio'] == data_selecionada].iloc
         
         col1, col2, col3 = st.columns(3)
         col1.metric("🟩 Sinais LONG", int(linha_relatorio['longs']))
