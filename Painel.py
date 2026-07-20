@@ -13,7 +13,7 @@ st.set_page_config(page_title="Spider Spread - Painel de Sinais", layout="wide")
 DB_URL_NUVEM = "postgres://postgres:Spider%40Cmc5354@db.azyrogbqlgeknojszgua.supabase.co:5432/postgres"
 
 # Definição da senha de acesso VIP do painel
-SENHA_CORRETA = "SpiderVIP2026"
+SENHA_CORRETA = "Spider@Cmc5354"
 
 if "autenticado" not in st.session_state:
     st.session_state.autenticado = False
