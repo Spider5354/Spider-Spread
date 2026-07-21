@@ -99,11 +99,11 @@ with st.sidebar:
 # FUNÇÕES DE BUSCA VIA POOLER SEGURO AWS
 # ==========================================
 def obter_conexao_direta():
-    # Conecta via Session Pooler através da porta estável 6543 usando o host correto do projeto
+    # Conecta via Session Pooler usando o padrão de usuário limpo do Supabase
     return psycopg2.connect(
-        host="aws-0-us-east-1.pooler.supabase.com",
+        host="://supabase.com",
         database="postgres",
-        user="postgres.azyrogbqlgeknojszgua",
+        user="postgres",  # <--- MUDADO: Deixamos apenas postgres sem o ponto e o ID
         password="Spider@Cmc5354",
         port="6543",
         connect_timeout=15
