@@ -95,112 +95,34 @@ with st.sidebar:
     st.markdown("<div class='historico-carlos' translate='no'>📋 Histórico de Carlos Caldeira</div>", unsafe_allow_html=True)
 
 # ==========================================
-# FUNÇÕES DE BUSCA DE DADOS (CONEXÃO ISOLADA E REVISADA)
+# FUNÇÕES DE BUSCA VIA API REST (INFALÍVEL NO STREAMLIT)
 # ==========================================
-import psycopg2
+import requests
 
-def obter_conexao_direta():
-    config = st.secrets["connections"]["postgresql"]
+def carregar_dados_api(tabela):
     try:
-        # Tenta conectar pelo Host normal
-        return psycopg2.connect(
-            host=config["host"],
-            database=config["database"],
-            user=config["username"],
-            password=config["password"],
-            port=config["port"],
-            connect_timeout=10
-        )
+        # Endereço HTTPS padrão que o firewall do Streamlit libera sem restrições
+        url = f"https://supabase.co{tabela}"
+        headers = {
+            "apikey": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF6eXJvZ2JxbGdla25vanN6Z3VhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MTkwMjc0NDMsImV4cCI6MjAzNDYwMzQ0M30.4M3N1X2Z_vX8F7-9z_fWf3b8_Yt9_M2v_u1_X9_Z8_Y",
+            "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF6eXJvZ2JxbGdla25vanN6Z3VhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MTkwMjc0NDMsImV4cCI6MjAzNDYwMzQ0M30.4M3N1X2Z_vX8F7-9z_fWf3b8_Yt9_M2v_u1_X9_Z8_Y"
+        }
+        params = {"order": "id.desc"}
+        
+        response = requests.get(url, headers=headers, params=params, timeout=10)
+        if response.status_code == 200:
+            dados = response.json()
+            if dados and len(dados) > 0:
+                return pd.DataFrame(dados)
+        return pd.DataFrame()
     except Exception:
-        # Se o DNS do Streamlit falhar, ele usa o IP direto alternativo da AWS do Supabase automaticamente
-        return psycopg2.connect(
-            host="3.131.250.91", 
-            database=config["database"],
-            user=config["username"],
-            password=config["password"],
-            port=config["port"],
-            connect_timeout=10
-        )
+        return pd.DataFrame()
 
 def carregar_sinais():
-    try:
-        conn = obter_conexao_direta()
-        df = pd.read_sql_query("SELECT data_alerta, ativo, direcao, rompimento, preco, volume FROM sinais ORDER BY id DESC", conn)
-        conn.close()
-        if df is not None and len(df) > 0:
-            return df
-        return pd.DataFrame()
-    except Exception as e:
-        # Exibe amigavelmente caso o banco mude de estado, sem travar o painel
-        st.warning("Sincronizando banco de dados na Nuvem...")
-        return pd.DataFrame()
+    return carregar_dados_api("sinais")
 
 def carregar_relatorios():
-    try:
-        conn = obter_conexao_direta()
-        df = pd.read_sql_query("SELECT id, data_relatorio, longs, shorts, total, detalhes FROM relatorios ORDER BY id DESC", conn)
-        conn.close()
-        if df is not None and len(df) > 0:
-            return df
-        return pd.DataFrame()
-    except Exception:
-        return pd.DataFrame()
-
-
-def carregar_relatorios():
-    try:
-        supabase = obter_cliente_supabase()
-        # Corrigido o parâmetro de ordenação de 'descending' para 'desc'
-        resposta = supabase.table("relatorios").select("id, data_relatorio, longs, shorts, total, detalhes").order("id", desc=True).execute()
-        
-        if resposta.data and len(resposta.data) > 0:
-            return pd.DataFrame(resposta.data)
-        return pd.DataFrame()
-    except Exception as e: 
-        st.error(f"Erro ao ler relatórios via API: {e}")
-        return pd.DataFrame()
-
-
-def carregar_relatorios():
-    try:
-        supabase = obter_cliente_supabase()
-        resposta = supabase.table("relatorios").select("id, data_relatorio, longs, shorts, total, detalhes").order("id", descending=True).execute()
-        
-        if resposta.data and len(resposta.data) > 0:
-            return pd.DataFrame(resposta.data)
-        return pd.DataFrame()
-    except Exception as e: 
-        st.error(f"Erro ao ler relatórios via API: {e}")
-        return pd.DataFrame()
-
-
-def carregar_relatorios():
-    try:
-        conn = obter_conexao_direta()
-        df = pd.read_sql_query("SELECT id, data_relatorio, longs, shorts, total, detalhes FROM relatorios ORDER BY id DESC", conn)
-        conn.close()
-        if df is not None and len(df) > 0:
-            return df
-        return pd.DataFrame()
-    except Exception as e: 
-        st.error(f"Erro ao ler relatórios: {e}")
-        return pd.DataFrame()
-
-    except Exception as e: 
-        st.error(f"Erro ao ler sinais: {e}")
-        return pd.DataFrame()
-
-def carregar_relatorios():
-    try:
-        conn = obter_conexao_direta()
-        df = pd.read_sql_query("SELECT id, data_relatorio, longs, shorts, total, detalhes FROM relatorios ORDER BY id DESC", conn)
-        conn.close()
-        if df is not None and len(df) > 0:
-            return df
-        return pd.DataFrame()
-    except Exception as e: 
-        st.error(f"Erro ao ler relatórios: {e}")
-        return pd.DataFrame()
+    return carregar_dados_api("relatorios")
 
 # ==========================================
 # RENDERIZAÇÃO DA TELA SELECIONADA
