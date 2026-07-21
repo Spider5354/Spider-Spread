@@ -10,7 +10,7 @@ st.set_page_config(page_title="Spider Spread - Painel de Sinais", layout="wide")
 # STRING DE CONEXÃO DA SUPABASE (CALIBRADA)
 # ==========================================
 # Uso do conector direto e limpo que o Python valida sem erros
-DB_URL_NUVEM = "postgres://postgres:Spider%40Cmc5354@db.azyrogbqlgeknojszgua.supabase.co:5432/postgres"
+DB_URL_NUVEM = "postgres://postgres:Spider%40Cmc5354@aws-0-sa-east-1.pooler.supabase.co:6543/postgres"
 
 # Definição da senha de acesso VIP do painel
 SENHA_CORRETA = "Spider@VIP5354"
