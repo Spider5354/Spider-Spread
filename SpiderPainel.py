@@ -31,11 +31,21 @@ with st.sidebar:
         st.session_state.pagina_atual = "relatorios"
         st.rerun()
 
+def obter_conexao_segura():
+    # Passamos os parâmetros de forma separada adicionando o modo SSL obrigatório do Pooler
+    return psycopg2.connect(
+        host="://supabase.com",
+        database="postgres",
+        user="postgres.azyrogbqlgeknojszgua", # Forçado com ID do tenant exigido pelo pooler
+        password="Spider@Cmc5354",
+        port="6543",
+        connect_timeout=15,
+        sslmode="require" # <--- ESSENCIAL: Mata a tentativa de buscar socket local do servidor
+    )
+
 def carregar_sinais():
     try:
-        # CORRIGIDO: Link direto com a escrita perfeita do Supabase
-        string_conexao = "postgresql://postgres:Spider%40Cmc5354@://supabase.com"
-        conn = psycopg2.connect(string_conexao, connect_timeout=15)
+        conn = obter_conexao_segura()
         df = pd.read_sql_query("SELECT data_alerta, ativo, direcao, rompimento, preco, volume FROM sinais ORDER BY id DESC", conn)
         conn.close()
         if df is not None and not df.empty:
@@ -54,9 +64,7 @@ def carregar_sinais():
 
 def carregar_relatorios():
     try:
-        # CORRIGIDO: Link direto com a escrita perfeita do Supabase
-        string_conexao = "postgresql://postgres:Spider%40Cmc5354@://supabase.com"
-        conn = psycopg2.connect(string_conexao, connect_timeout=15)
+        conn = obter_conexao_segura()
         df = pd.read_sql_query("SELECT id, data_relatorio, longs, shorts, total, detalhes FROM relatorios ORDER BY id DESC", conn)
         conn.close()
         return df
