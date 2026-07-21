@@ -100,24 +100,30 @@ with st.sidebar:
 # ==========================================
 import requests
 
-def carregar_dados_api(tabela):
+def carregar_sinais():
     try:
-        url = f"https://supabase.co{tabela}"
+        url = "https://supabase.co"
         nova_chave = "sb_publishable_gBU-BMvqUKIoTlXppK1_NA_SCQDl_OL"
         
         headers = {
             "apikey": nova_chave,
             "Authorization": f"Bearer {nova_chave}",
-            "Cache-Control": "no-cache"  # Força o Supabase a ignorar o cache de requisição antiga
+            "Cache-Control": "no-cache"
         }
         
         response = requests.get(url, headers=headers, timeout=10)
+        
+        # JOGA O STATUS NA TELA DO USUÁRIO PARA DIAGNÓSTICO
+        st.write(f"🔍 Status da API: {response.status_code}")
+        st.write(f"📦 Conteúdo recebido: {response.text}")
+        
         if response.status_code == 200:
             dados = response.json()
             if dados and len(dados) > 0:
                 return pd.DataFrame(dados)
         return pd.DataFrame()
-    except Exception:
+    except Exception as e:
+        st.error(f"Erro no diagnóstico: {e}")
         return pd.DataFrame()
 
 def carregar_sinais():
