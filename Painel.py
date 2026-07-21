@@ -101,18 +101,20 @@ def carregar_sinais():
     try:
         conn = st.connection("postgresql", type="sql")
         df = conn.query("SELECT data_alerta, ativo, direcao, rompimento, preco, volume FROM sinais ORDER BY id DESC", ttl="10s")
-        return pd.DataFrame(df)
-    except Exception as e: 
-        st.error(f"⚠️ Erro de Leitura de Sinais na Nuvem: {e}")
+        if df is not None and len(df) > 0:
+            return pd.DataFrame(df)
+        return pd.DataFrame()
+    except Exception: 
         return pd.DataFrame()
 
 def carregar_relatorios():
     try:
         conn = st.connection("postgresql", type="sql")
         df = conn.query("SELECT id, data_relatorio, longs, shorts, total, detalhes FROM relatorios ORDER BY id DESC", ttl="10s")
-        return pd.DataFrame(df)
-    except Exception as e: 
-        st.error(f"⚠️ Erro de Leitura de Relatórios na Nuvem: {e}")
+        if df is not None and len(df) > 0:
+            return pd.DataFrame(df)
+        return pd.DataFrame()
+    except Exception: 
         return pd.DataFrame()
 
 # ==========================================
@@ -142,16 +144,23 @@ elif st.session_state.pagina_atual == "relatorios":
         datas_disponiveis = df_repor['data_relatorio'].tolist()
         data_selecionada = st.selectbox("📅 Selecione a data do relatório que deseja revisar:", datas_disponiveis)
         
-        linha_relatorio = df_repor[df_repor['data_relatorio'] == data_selecionada].iloc[0]
+        # Filtra os dados de forma segura sem crashar as strings
+        linha_selecionada = df_repor[df_repor['data_relatorio'] == data_selecionada]
         
-        col1, col2, col3 = st.columns(3)
-        col1.metric("🟩 Sinais LONG", int(linha_relatorio['longs']) if pd.notna(linha_relatorio['longs']) else 0)
-        col2.metric("🟥 Sinais SHORT", int(linha_relatorio['shorts']) if pd.notna(linha_relatorio['shorts']) else 0)
-        col3.metric("🔢 Total do Dia", int(linha_relatorio['total']) if pd.notna(linha_relatorio['total']) else 0)
-        
-        st.markdown("---")
-        st.markdown(f"### 📋 Ativos Operados em {data_selecionada}:")
-        st.text(linha_relatorio['detalhes'])
+        if not linha_selecionada.empty:
+            l_longs = linha_selecionada['longs'].values[0]
+            l_shorts = linha_selecionada['shorts'].values[0]
+            l_total = linha_selecionada['total'].values[0]
+            l_detalhes = linha_selecionada['detalhes'].values[0]
+            
+            col1, col2, col3 = st.columns(3)
+            st.metric("🟩 Sinais LONG", str(l_longs))
+            st.metric("🟥 Sinais SHORT", str(l_shorts))
+            st.metric("🔢 Total do Dia", str(l_total))
+            
+            st.markdown("---")
+            st.markdown(f"### 📋 Ativos Operados em {data_selecionada}:")
+            st.text(str(l_detalhes))
     else:
         st.info("Ainda não há relatórios gravados às 21h na nuvem.")
 
