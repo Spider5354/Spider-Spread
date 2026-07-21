@@ -33,8 +33,8 @@ with st.sidebar:
 
 def carregar_sinais():
     try:
-        # Link de conexão criptografado direto para anular qualquer cache do servidor
-        string_conexao = "postgres" + "ql://postg" + "res:Spider%40Cmc5354@aw" + "s-0-us-east-1.pooler.subap" + "://ase.com"
+        # CORRIGIDO: Link direto com a escrita perfeita do Supabase
+        string_conexao = "postgresql://postgres:Spider%40Cmc5354@://supabase.com"
         conn = psycopg2.connect(string_conexao, connect_timeout=15)
         df = pd.read_sql_query("SELECT data_alerta, ativo, direcao, rompimento, preco, volume FROM sinais ORDER BY id DESC", conn)
         conn.close()
@@ -54,7 +54,8 @@ def carregar_sinais():
 
 def carregar_relatorios():
     try:
-        string_conexao = "postgres" + "ql://postg" + "res:Spider%40Cmc5354@aw" + "s-0-us-east-1.pooler.subap" + "://ase.com"
+        # CORRIGIDO: Link direto com a escrita perfeita do Supabase
+        string_conexao = "postgresql://postgres:Spider%40Cmc5354@://supabase.com"
         conn = psycopg2.connect(string_conexao, connect_timeout=15)
         df = pd.read_sql_query("SELECT id, data_relatorio, longs, shorts, total, detalhes FROM relatorios ORDER BY id DESC", conn)
         conn.close()
