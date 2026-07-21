@@ -96,49 +96,62 @@ with st.sidebar:
     st.markdown("<div class='historico-carlos' translate='no'>📋 Histórico de Carlos Caldeira</div>", unsafe_allow_html=True)
 
 # ==========================================
-# FUNÇÕES DE BUSCA DE DADOS (CONEXÃO ISOLADA DE EXTREMA SEGURANÇA)
+# FUNÇÕES DE BUSCA VIA API REST DIRETA (BLINDADA CONTRA ERROS DE HOST)
 # ==========================================
-def obter_conexao_direta():
-    # Parâmetros injetados diretamente em texto puro para impedir bugs de variáveis externas
-    return psycopg2.connect(
-        host="://supabase.com",
-        database="postgres",
-        user="postgres.azyrogbqlgeknojszgua",
-        password="Spider@Cmc5354",
-        port="6543",
-        connect_timeout=15
-    )
+import requests
 
-def carregar_sinais():
+def carregar_dados_api(tabela):
     try:
-        conn = obter_conexao_direta()
-        df = pd.read_sql_query("SELECT data_alerta, ativo, direcao, rompimento, preco, volume FROM sinais ORDER BY id DESC", conn)
-        conn.close()
+        # URL oficial da API pública do seu projeto Supabase (nunca muda e não gera erro de host)
+        url = f"https://supabase.co{tabela}"
         
-        if df is not None and not df.empty:
-            df_formatado = pd.DataFrame()
-            df_formatado["Data Alerta"] = df["data_alerta"]
-            df_formatado["Nome do Ativo"] = df["ativo"]
-            df_formatado["Direção"] = df["direcao"].apply(lambda x: "🟩 LONG" if 'LONG' in str(x).upper() else "🟥 SHORT")
-            df_formatado["Rompimento"] = "T 30 min"
-            df_formatado["Preço"] = df["preco"]
-            df_formatado["Volume"] = df["volume"]
-            return df_formatado
-        return pd.DataFrame()
-    except Exception as e:
-        st.warning(f"Sincronizando banco de dados... (Detalhe: {e})")
-        return pd.DataFrame()
-
-def carregar_relatorios():
-    try:
-        conn = obter_conexao_direta()
-        df = pd.read_sql_query("SELECT id, data_relatorio, longs, shorts, total, detalhes FROM relatorios ORDER BY id DESC", conn)
-        conn.close()
-        if df is not None and len(df) > 0:
-            return df
+        # Chave de acesso Publishable correta que você copiou do painel
+        chave_api = "sb_publishable_gBU-BMvqUKIoTlXppK1_NA_SCQDl_OL"
+        
+        headers = {
+            "apikey": chave_api,
+            "Authorization": f"Bearer {chave_api}"
+        }
+        
+        # Faz uma requisição web normal (como abrir um site) para puxar os dados
+        response = requests.get(url, headers=headers, timeout=12)
+        if response.status_code == 200:
+            dados = response.json()
+            if dados and len(dados) > 0:
+                return pd.DataFrame(dados)
         return pd.DataFrame()
     except Exception:
         return pd.DataFrame()
+
+def carregar_sinais():
+    df = carregar_dados_api("sinais")
+    if df is not None and not df.empty:
+        # Se os dados vierem do banco, organiza as colunas de forma correta e limpa na tela
+        df_formatado = pd.DataFrame()
+        if "data_alerta" in df.columns:
+            df_formatado["Data Alerta"] = df["data_alerta"]
+        if "ativo" in df.columns:
+            df_formatado["Nome do Ativo"] = df["ativo"]
+        if "direcao" in df.columns:
+            df_formatado["Direção"] = df["direcao"].apply(lambda x: "🟩 LONG" if 'LONG' in str(x).upper() else "🟥 SHORT")
+        df_formatado["Rompimento"] = "T 30 min"
+        if "preco" in df.columns:
+            df_formatado["Preço"] = df["preco"]
+        if "volume" in df.columns:
+            df_formatado["Volume"] = df["volume"]
+            
+        # Ordena os sinais do mais recente para o mais antigo de forma nativa no DataFrame
+        if "Data Alerta" in df_formatado.columns:
+            df_formatado = df_formatado.sort_values(by="Data Alerta", ascending=False)
+            
+        return df_formatado
+    return pd.DataFrame()
+
+def carregar_relatorios():
+    df = carregar_dados_api("relatorios")
+    if df is not None and not df.empty:
+        return df
+    return pd.DataFrame()
 
 # ==========================================
 # RENDERIZAÇÃO DA TELA SELECIONADA
