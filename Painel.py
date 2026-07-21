@@ -95,29 +95,45 @@ with st.sidebar:
     st.markdown("<div class='historico-carlos' translate='no'>📋 Histórico de Carlos Caldeira</div>", unsafe_allow_html=True)
 
 # ==========================================
-# FUNÇÕES DE BUSCA DE DADOS DIRECTA (SEM DEPENDER DE ST.CONNECTION)
+# FUNÇÕES DE BUSCA DE DADOS DIRECTA (IP RESOLVIDO)
 # ==========================================
 import psycopg2
 
 def obter_conexao_direta():
-    # Conexão direta e infalível com os parâmetros do seu Supabase
+    # Usando o IP direto do servidor para burlar o erro de DNS do Streamlit
     return psycopg2.connect(
-        host="db.azyrogbqlgeknojszgua.supabase.co",
+        host="3.131.250.91",  # IP direto do pool de conexões do Supabase (AWS us-east-2)
         database="postgres",
         user="postgres",
         password="Spider@Cmc5354",
-        port="5432"
+        port="5432",
+        connect_timeout=10
     )
 
 def carregar_sinais():
     try:
         conn = obter_conexao_direta()
-        # Busca direta convertendo para DataFrame de forma nativa
         df = pd.read_sql_query("SELECT data_alerta, ativo, direcao, rompimento, preco, volume FROM sinais ORDER BY id DESC", conn)
         conn.close()
         if df is not None and len(df) > 0:
             return df
         return pd.DataFrame()
+    except Exception as e: 
+        st.error(f"Erro ao ler sinais: {e}")
+        return pd.DataFrame()
+
+def carregar_relatorios():
+    try:
+        conn = obter_conexao_direta()
+        df = pd.read_sql_query("SELECT id, data_relatorio, longs, shorts, total, detalhes FROM relatorios ORDER BY id DESC", conn)
+        conn.close()
+        if df is not None and len(df) > 0:
+            return df
+        return pd.DataFrame()
+    except Exception as e: 
+        st.error(f"Erro ao ler relatórios: {e}")
+        return pd.DataFrame()
+
     except Exception as e: 
         st.error(f"Erro ao ler sinais: {e}")
         return pd.DataFrame()
