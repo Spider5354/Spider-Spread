@@ -1,16 +1,9 @@
 import streamlit as st
 import pandas as pd
-import psycopg2
 import time
 
-# Configuração da página web (Layout Expandido)
+# Configuração da página web
 st.set_page_config(page_title="Spider Spread - Painel de Sinais", layout="wide")
-
-# ==========================================
-# STRING DE CONEXÃO DA SUPABASE (CORRIGIDA)
-# ==========================================
-# Ajustado para postgresql:// e usando o Pooler oficial da Supabase porta 6543
-DB_URL_NUVEM = "postgresql://postgres:Spider%40Cmc5354@://supabase.com"
 
 # Definição da senha de acesso VIP do painel
 SENHA_CORRETA = "Spider@VIP5354"
@@ -102,26 +95,23 @@ with st.sidebar:
     st.markdown("<div class='historico-carlos' translate='no'>📋 Histórico de Carlos Caldeira</div>", unsafe_allow_html=True)
 
 # ==========================================
-# FUNÇÕES DE BUSCA DE DADOS (COM ASPAS DUPLAS)
+# FUNÇÕES DE BUSCA DE DADOS (CONEXÃO SECRETA NATIVA)
 # ==========================================
 def carregar_sinais():
     try:
-        conn = psycopg2.connect(DB_URL_NUVEM)
-        # CORREÇÃO: Aspas duplas forçam o banco na nuvem a encontrar a tabela exata
-        df = pd.read_sql_query('SELECT data_alerta, ativo, direcao, rompimento, preco, volume FROM "sinais" ORDER BY id DESC', conn)
-        conn.close()
-        return df
+        # Puxa os dados com o motor nativo e seguro do Streamlit Cloud
+        conn = st.connection("postgresql", type="sql")
+        df = conn.query("SELECT data_alerta, ativo, direcao, rompimento, preco, volume FROM sinais ORDER BY id DESC", ttl="10s")
+        return pd.DataFrame(df)
     except Exception as e: 
         st.error(f"⚠️ Erro de Leitura na Nuvem: {e}")
         return pd.DataFrame()
 
 def carregar_relatorios():
     try:
-        conn = psycopg2.connect(DB_URL_NUVEM)
-        # CORREÇÃO: Aspas duplas forçam o banco na nuvem a encontrar a tabela exata
-        df = pd.read_sql_query('SELECT id, data_relatorio, longs, shorts, total, detalhes FROM "relatorios" ORDER BY id DESC', conn)
-        conn.close()
-        return df
+        conn = st.connection("postgresql", type="sql")
+        df = conn.query("SELECT id, data_relatorio, longs, shorts, total, detalhes FROM relatorios ORDER BY id DESC", ttl="10s")
+        return pd.DataFrame(df)
     except Exception as e: 
         st.error(f"⚠️ Erro de Leitura na Nuvem: {e}")
         return pd.DataFrame()
@@ -152,8 +142,7 @@ elif st.session_state.pagina_atual == "relatorios":
     if not df_repor.empty:
         datas_disponiveis = df_repor['data_relatorio'].tolist()
         data_selecionada = st.selectbox("📅 Selecione a data do relatório que deseja revisar:", datas_disponiveis)
-        
-        linha_relatorio = df_repor[df_repor['data_relatorio'] == data_selecionada].iloc[0]
+        linha_relatorio = df_repor[df_repor['data_relatorio'] == data_selecionada].iloc
         
         col1, col2, col3 = st.columns(3)
         col1.metric("🟩 Sinais LONG", int(linha_relatorio['longs']))
