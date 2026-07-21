@@ -95,27 +95,40 @@ with st.sidebar:
     st.markdown("<div class='historico-carlos' translate='no'>📋 Histórico de Carlos Caldeira</div>", unsafe_allow_html=True)
 
 # ==========================================
-# FUNÇÕES DE BUSCA DE DADOS (CONEXÃO CORRIGIDA)
+# FUNÇÕES DE BUSCA DE DADOS DIRECTA (SEM DEPENDER DE ST.CONNECTION)
 # ==========================================
+import psycopg2
+
+def obter_conexao_direta():
+    # Conexão direta e infalível com os parâmetros do seu Supabase
+    return psycopg2.connect(
+        host="db.azyrogbqlgeknojszgua.supabase.co",
+        database="postgres",
+        user="postgres",
+        password="Spider@Cmc5354",
+        port="5432"
+    )
+
 def carregar_sinais():
     try:
-        conn = st.connection("postgresql", type="sql")
-        # Força a busca explicitando o schema 'public' e remove travas de cache temporariamente
-        df = conn.query("SELECT data_alerta, ativo, direcao, rompimento, preco, volume FROM public.sinais ORDER BY id DESC", ttl=0)
+        conn = obter_conexao_direta()
+        # Busca direta convertendo para DataFrame de forma nativa
+        df = pd.read_sql_query("SELECT data_alerta, ativo, direcao, rompimento, preco, volume FROM sinais ORDER BY id DESC", conn)
+        conn.close()
         if df is not None and len(df) > 0:
-            return pd.DataFrame(df)
+            return df
         return pd.DataFrame()
     except Exception as e: 
-        # Mostra o erro exato na tela caso o Streamlit falhe internamente
         st.error(f"Erro ao ler sinais: {e}")
         return pd.DataFrame()
 
 def carregar_relatorios():
     try:
-        conn = st.connection("postgresql", type="sql")
-        df = conn.query("SELECT id, data_relatorio, longs, shorts, total, detalhes FROM public.relatorios ORDER BY id DESC", ttl=0)
+        conn = obter_conexao_direta()
+        df = pd.read_sql_query("SELECT id, data_relatorio, longs, shorts, total, detalhes FROM relatorios ORDER BY id DESC", conn)
+        conn.close()
         if df is not None and len(df) > 0:
-            return pd.DataFrame(df)
+            return df
         return pd.DataFrame()
     except Exception as e: 
         st.error(f"Erro ao ler relatórios: {e}")
