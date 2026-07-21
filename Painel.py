@@ -1,7 +1,7 @@
 import streamlit as st
 import pandas as pd
 import time
-import psycopg2
+import requests
 
 # Configuração da página web
 st.set_page_config(page_title="Spider Spread - Painel de Sinais", layout="wide")
@@ -96,10 +96,8 @@ with st.sidebar:
     st.markdown("<div class='historico-carlos' translate='no'>📋 Histórico de Carlos Caldeira</div>", unsafe_allow_html=True)
 
 # ==========================================
-# FUNÇÕES DE BUSCA VIA API REST DIRETA (BLINDADA CONTRA ERROS DE HOST)
+# FUNÇÕES DE BUSCA E DIAGNÓSTICO INDEPENDENTES
 # ==========================================
-import requests
-
 def carregar_sinais():
     try:
         url = "https://supabase.co"
@@ -113,9 +111,9 @@ def carregar_sinais():
         
         response = requests.get(url, headers=headers, timeout=10)
         
-        # JOGA O STATUS NA TELA DO USUÁRIO PARA DIAGNÓSTICO
-        st.write(f"🔍 Status da API: {response.status_code}")
-        st.write(f"📦 Conteúdo recebido: {response.text}")
+        # Exibe o status da requisição e os dados puros recebidos na tela do painel
+        st.write(f"🔍 Status da API Supabase: {response.status_code}")
+        st.write(f"📦 Resposta Bruta: {response.text}")
         
         if response.status_code == 200:
             dados = response.json()
@@ -123,21 +121,28 @@ def carregar_sinais():
                 return pd.DataFrame(dados)
         return pd.DataFrame()
     except Exception as e:
-        st.error(f"Erro no diagnóstico: {e}")
+        st.error(f"Erro ao diagnosticar sinais: {e}")
         return pd.DataFrame()
 
-def carregar_sinais():
-    df = carregar_dados_api("sinais")
-    if df is not None and not df.empty:
-        # Se houver qualquer dado, joga direto na tela para decifrarmos a nomenclatura
-        return df
-    return pd.DataFrame()
-
 def carregar_relatorios():
-    df = carregar_dados_api("relatorios")
-    if df is not None and not df.empty:
-        return df
-    return pd.DataFrame()
+    try:
+        url = "https://supabase.co"
+        nova_chave = "sb_publishable_gBU-BMvqUKIoTlXppK1_NA_SCQDl_OL"
+        
+        headers = {
+            "apikey": nova_chave,
+            "Authorization": f"Bearer {nova_chave}",
+            "Cache-Control": "no-cache"
+        }
+        
+        response = requests.get(url, headers=headers, timeout=10)
+        if response.status_code == 200:
+            dados = response.json()
+            if dados and len(dados) > 0:
+                return pd.DataFrame(dados)
+        return pd.DataFrame()
+    except Exception:
+        return pd.DataFrame()
 
 # ==========================================
 # RENDERIZAÇÃO DA TELA SELECIONADA
