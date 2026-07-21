@@ -123,14 +123,8 @@ def carregar_dados_api(tabela):
 def carregar_sinais():
     df = carregar_dados_api("sinais")
     if df is not None and not df.empty:
-        df_formatado = pd.DataFrame()
-        df_formatado["Data Alerta"] = df["data_alerta"]
-        df_formatado["Nome do Ativo"] = df["ativo"]
-        df_formatado["Direção"] = df["direcao"].apply(lambda x: "🟩 LONG" if 'LONG' in str(x).upper() else "🟥 SHORT")
-        df_formatado["Rompimento"] = "T 30 min"
-        df_formatado["Preço"] = df["preco"]
-        df_formatado["Volume"] = df["volume"]
-        return df_formatado
+        # Se vier qualquer dado da API, joga direto na tela para vermos
+        return df
     return pd.DataFrame()
 
 def carregar_relatorios():
