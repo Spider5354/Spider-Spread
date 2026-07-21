@@ -95,26 +95,30 @@ with st.sidebar:
     st.markdown("<div class='historico-carlos' translate='no'>📋 Histórico de Carlos Caldeira</div>", unsafe_allow_html=True)
 
 # ==========================================
-# FUNÇÕES DE BUSCA DE DADOS (CONEXÃO SECRETA NATIVA)
+# FUNÇÕES DE BUSCA DE DADOS (CONEXÃO CORRIGIDA)
 # ==========================================
 def carregar_sinais():
     try:
         conn = st.connection("postgresql", type="sql")
-        df = conn.query("SELECT data_alerta, ativo, direcao, rompimento, preco, volume FROM sinais ORDER BY id DESC", ttl="10s")
+        # Força a busca explicitando o schema 'public' e remove travas de cache temporariamente
+        df = conn.query("SELECT data_alerta, ativo, direcao, rompimento, preco, volume FROM public.sinais ORDER BY id DESC", ttl=0)
         if df is not None and len(df) > 0:
             return pd.DataFrame(df)
         return pd.DataFrame()
-    except Exception: 
+    except Exception as e: 
+        # Mostra o erro exato na tela caso o Streamlit falhe internamente
+        st.error(f"Erro ao ler sinais: {e}")
         return pd.DataFrame()
 
 def carregar_relatorios():
     try:
         conn = st.connection("postgresql", type="sql")
-        df = conn.query("SELECT id, data_relatorio, longs, shorts, total, detalhes FROM relatorios ORDER BY id DESC", ttl="10s")
+        df = conn.query("SELECT id, data_relatorio, longs, shorts, total, detalhes FROM public.relatorios ORDER BY id DESC", ttl=0)
         if df is not None and len(df) > 0:
             return pd.DataFrame(df)
         return pd.DataFrame()
-    except Exception: 
+    except Exception as e: 
+        st.error(f"Erro ao ler relatórios: {e}")
         return pd.DataFrame()
 
 # ==========================================
