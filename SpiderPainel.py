@@ -47,7 +47,7 @@ with st.sidebar:
 
 def obter_conexao_direta():
     # Definição manual e forçada para quebrar qualquer cache antigo
-    config_host = "://supabase.com"
+    config_host="://supabase.com"
     config_user = "postgres"
     config_pass = "Spider@Cmc5354"
     config_port = "6543"
