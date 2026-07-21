@@ -95,28 +95,29 @@ with st.sidebar:
     st.markdown("<div class='historico-carlos' translate='no'>📋 Histórico de Carlos Caldeira</div>", unsafe_allow_html=True)
 
 # ==========================================
-# FUNÇÕES DE BUSCA VIA API SUPABASE (PROTEGIDA)
+# FUNÇÕES DE BUSCA DE DADOS (CONEXÃO CORRETA E ALINHADA)
 # ==========================================
-from supabase import create_client, Client
-
-SUPABASE_URL = "https://supabase.co"
-# Puxa a chave de forma totalmente segura a partir dos Secrets ocultos do Streamlit
-SUPABASE_KEY = st.secrets["SUPABASE_KEY"]
-
-def obter_cliente_supabase() -> Client:
-    return create_client(SUPABASE_URL, SUPABASE_KEY)
-
 def carregar_sinais():
     try:
-        supabase = obter_cliente_supabase()
-        # Corrigido o parâmetro de ordenação de 'descending' para 'desc'
-        resposta = supabase.table("sinais").select("data_alerta, ativo, direcao, rompimento, preco, volume").order("id", desc=True).execute()
-        
-        if resposta.data and len(resposta.data) > 0:
-            return pd.DataFrame(resposta.data)
+        # Usa a conexão padrão configurada nos Secrets automaticamente
+        conn = st.connection("postgresql", type="sql")
+        df = conn.query("SELECT data_alerta, ativo, direcao, rompimento, preco, volume FROM sinais ORDER BY id DESC", ttl=0)
+        if df is not None and len(df) > 0:
+            return pd.DataFrame(df)
         return pd.DataFrame()
-    except Exception as e: 
-        st.error(f"Erro ao ler sinais via API: {e}")
+    except Exception as e:
+        st.error(f"Erro ao ler sinais no banco: {e}")
+        return pd.DataFrame()
+
+def carregar_relatorios():
+    try:
+        conn = st.connection("postgresql", type="sql")
+        df = conn.query("SELECT id, data_relatorio, longs, shorts, total, detalhes FROM relatorios ORDER BY id DESC", ttl=0)
+        if df is not None and len(df) > 0:
+            return pd.DataFrame(df)
+        return pd.DataFrame()
+    except Exception as e:
+        st.error(f"Erro ao ler relatórios no banco: {e}")
         return pd.DataFrame()
 
 def carregar_relatorios():
