@@ -102,19 +102,16 @@ import requests
 
 def carregar_dados_api(tabela):
     try:
-        # URL oficial da API pública do seu projeto Supabase (nunca muda e não gera erro de host)
         url = f"https://supabase.co{tabela}"
-        
-        # Chave de acesso Publishable correta que você copiou do painel
-        chave_api = "sb_publishable_gBU-BMvqUKIoTlXppK1_NA_SCQDl_OL"
+        nova_chave = "sb_publishable_gBU-BMvqUKIoTlXppK1_NA_SCQDl_OL"
         
         headers = {
-            "apikey": chave_api,
-            "Authorization": f"Bearer {chave_api}"
+            "apikey": nova_chave,
+            "Authorization": f"Bearer {nova_chave}",
+            "Cache-Control": "no-cache"  # Força o Supabase a ignorar o cache de requisição antiga
         }
         
-        # Faz uma requisição web normal (como abrir um site) para puxar os dados
-        response = requests.get(url, headers=headers, timeout=12)
+        response = requests.get(url, headers=headers, timeout=10)
         if response.status_code == 200:
             dados = response.json()
             if dados and len(dados) > 0:
@@ -126,25 +123,8 @@ def carregar_dados_api(tabela):
 def carregar_sinais():
     df = carregar_dados_api("sinais")
     if df is not None and not df.empty:
-        # Se os dados vierem do banco, organiza as colunas de forma correta e limpa na tela
-        df_formatado = pd.DataFrame()
-        if "data_alerta" in df.columns:
-            df_formatado["Data Alerta"] = df["data_alerta"]
-        if "ativo" in df.columns:
-            df_formatado["Nome do Ativo"] = df["ativo"]
-        if "direcao" in df.columns:
-            df_formatado["Direção"] = df["direcao"].apply(lambda x: "🟩 LONG" if 'LONG' in str(x).upper() else "🟥 SHORT")
-        df_formatado["Rompimento"] = "T 30 min"
-        if "preco" in df.columns:
-            df_formatado["Preço"] = df["preco"]
-        if "volume" in df.columns:
-            df_formatado["Volume"] = df["volume"]
-            
-        # Ordena os sinais do mais recente para o mais antigo de forma nativa no DataFrame
-        if "Data Alerta" in df_formatado.columns:
-            df_formatado = df_formatado.sort_values(by="Data Alerta", ascending=False)
-            
-        return df_formatado
+        # Se houver qualquer dado, joga direto na tela para decifrarmos a nomenclatura
+        return df
     return pd.DataFrame()
 
 def carregar_relatorios():
