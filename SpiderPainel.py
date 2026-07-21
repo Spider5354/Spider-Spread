@@ -46,12 +46,9 @@ with st.sidebar:
     st.markdown("<div class='historico-carlos' translate='no'>📋 Histórico de Carlos Caldeira</div>", unsafe_allow_html=True)
 
 def obter_conexao_direta():
+    # Passamos as credenciais de forma bruta para anular variáveis de ambiente ocultas do servidor
     return psycopg2.connect(
-        host="://supabase.com",
-        database="postgres",
-        user="postgres",
-        password="Spider@Cmc5354",
-        port="6543",
+        dsn="postgresql://postgres:Spider%40Cmc5354@://supabase.com",
         connect_timeout=15
     )
 
