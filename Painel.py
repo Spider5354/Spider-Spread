@@ -1,11 +1,12 @@
 import streamlit as st
 import pandas as pd
 import time
+import requests
 
 # Configuração da página web
 st.set_page_config(page_title="Spider Spread - Painel de Sinais", layout="wide")
 
-# Definição da senha de acesso VIP do painel (ATUALIZADA)
+# Definição da senha de acesso VIP do painel
 SENHA_CORRETA = "SpiderVIP.5354"
 
 if "autenticado" not in st.session_state:
@@ -36,7 +37,7 @@ if not st.session_state.autenticado:
         if botao_entrar:
             if senha_digitada == SENHA_CORRETA:
                 st.session_state.autenticado = True
-                st.success("Acesso autorizado com sucesso! Carregando...")
+                st.success("Acesso authorized com sucesso! Carregando...")
                 time.sleep(1)
                 st.rerun()
             else:
@@ -95,13 +96,10 @@ with st.sidebar:
     st.markdown("<div class='historico-carlos' translate='no'>📋 Histórico de Carlos Caldeira</div>", unsafe_allow_html=True)
 
 # ==========================================
-# FUNÇÕES DE BUSCA VIA API REST (INFALÍVEL NO STREAMLIT)
+# FUNÇÕES DE BUSCA VIA API REST
 # ==========================================
-import requests
-
 def carregar_dados_api(tabela):
     try:
-        # Endereço HTTPS padrão que o firewall do Streamlit libera sem restrições
         url = f"https://supabase.co{tabela}"
         headers = {
             "apikey": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF6eXJvZ2JxbGdla25vanN6Z3VhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MTkwMjc0NDMsImV4cCI6MjAzNDYwMzQ0M30.4M3N1X2Z_vX8F7-9z_fWf3b8_Yt9_M2v_u1_X9_Z8_Y",
@@ -121,7 +119,6 @@ def carregar_dados_api(tabela):
 def carregar_sinais():
     df = carregar_dados_api("sinais")
     if df is not None and not df.empty:
-        # Cria um novo DataFrame organizando e formatando as colunas pelos nomes exatos da API
         df_formatado = pd.DataFrame()
         df_formatado["Data Alerta"] = df["data_alerta"]
         df_formatado["Nome do Ativo"] = df["ativo"]
@@ -135,58 +132,8 @@ def carregar_sinais():
 def carregar_relatorios():
     df = carregar_dados_api("relatorios")
     if df is not None and not df.empty:
-        colunas_necessarias = ["id", "data_relatorio", "longs", "shorts", "total", "detalhes"]
-        df = df[[col for col in colunas_necessarias if col in df.columns]]
         return df
     return pd.DataFrame()
-
-# ==========================================
-# RENDERIZAÇÃO DA TELA SELECIONADA
-# ==========================================
-if st.session_state.pagina_atual == "alertas":
-    st.markdown("<h1 style='color: #111111;' translate='no'>Alertas Milionários</h1>", unsafe_allow_html=True)
-    st.caption("Acompanhamento de rompimentos de pivot e pullbacks por zona sincronizados com o robô Python na Nuvem")
-    st.markdown("<br>", unsafe_allow_html=True)
-
-df_sinais = carregar_sinais()
-if df_sinais is not None and not df_sinais.empty:
-    st.dataframe(df_sinais, use_container_width=True, hide_index=True)
-else:
-    st.info("Aguardando os novos sinais do robô na nuvem...")
-
-elif st.session_state.pagina_atual == "relatorios":
-    st.markdown("<h1 style='color: #111111;'>Histórico de Relatórios Diários (21h)</h1>", unsafe_allow_html=True)
-    st.caption("Central de fechamento operacional gravado de forma automática todas as noites na nuvem")
-    st.markdown("<br>", unsafe_allow_html=True)
-
-    df_repor = carregar_relatorios()
-    if df_repor is not None and not df_repor.empty:
-        datas_disponiveis = df_repor['data_relatorio'].tolist()
-        data_selecionada = st.selectbox("📅 Selecione a data do relatório que deseja revisar:", datas_disponiveis)
-        
-        # Filtra os dados de forma segura sem crashar as strings
-        linha_selecionada = df_repor[df_repor['data_relatorio'] == data_selecionada]
-        
-        if not linha_selecionada.empty:
-            l_longs = linha_selecionada['longs'].values[0]
-            l_shorts = linha_selecionada['shorts'].values[0]
-            l_total = linha_selecionada['total'].values[0]
-            l_detalhes = linha_selecionada['detalhes'].values[0]
-            
-            col1, col2, col3 = st.columns(3)
-            st.metric("🟩 Sinais LONG", str(l_longs))
-            st.metric("🟥 Sinais SHORT", str(l_shorts))
-            st.metric("🔢 Total do Dia", str(l_total))
-            
-            st.markdown("---")
-            st.markdown(f"### 📋 Ativos Operados em {data_selecionada}:")
-            st.text(str(l_detalhes))
-    else:
-        st.info("Ainda não há relatórios gravados às 21h na nuvem.")
-
-# Auto-refresh de 10 segundos
-time.sleep(10)
-st.rerun()
 
 # ==========================================
 # RENDERIZAÇÃO DA TELA SELECIONADA
