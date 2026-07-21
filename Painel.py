@@ -168,7 +168,7 @@ elif st.session_state.pagina_atual == "relatorios":
         
         linha_selecionada = df_repor[df_repor['data_relatorio'] == data_selecionada]
         
-                if not linha_selecionada.empty:
+        if not linha_selecionada.empty:
             l_longs = linha_selecionada['longs'].values[0]
             l_shorts = linha_selecionada['shorts'].values[0]
             l_total = linha_selecionada['total'].values[0]
@@ -185,7 +185,6 @@ elif st.session_state.pagina_atual == "relatorios":
             st.markdown("---")
             st.markdown(f"### 📋 Ativos Operados em {data_selecionada}:")
             st.text(l_detalhes)
-
     else:
         st.info("Ainda não há relatórios gravados às 21h pelo robô Python.")
 
