@@ -96,37 +96,11 @@ with st.sidebar:
     st.markdown("<div class='historico-carlos' translate='no'>📋 Histórico de Carlos Caldeira</div>", unsafe_allow_html=True)
 
 # ==========================================
-# FUNÇÕES DE BUSCA E DIAGNÓSTICO INDEPENDENTES
+# FUNÇÕES DE BUSCA VIA NOVA DATA API (URL REALINHADA)
 # ==========================================
-def carregar_sinais():
+def carregar_dados_api(tabela):
     try:
-        url = "https://supabase.co"
-        nova_chave = "sb_publishable_gBU-BMvqUKIoTlXppK1_NA_SCQDl_OL"
-        
-        headers = {
-            "apikey": nova_chave,
-            "Authorization": f"Bearer {nova_chave}",
-            "Cache-Control": "no-cache"
-        }
-        
-        response = requests.get(url, headers=headers, timeout=10)
-        
-        # Exibe o status da requisição e os dados puros recebidos na tela do painel
-        st.write(f"🔍 Status da API Supabase: {response.status_code}")
-        st.write(f"📦 Resposta Bruta: {response.text}")
-        
-        if response.status_code == 200:
-            dados = response.json()
-            if dados and len(dados) > 0:
-                return pd.DataFrame(dados)
-        return pd.DataFrame()
-    except Exception as e:
-        st.error(f"Erro ao diagnosticar sinais: {e}")
-        return pd.DataFrame()
-
-def carregar_relatorios():
-    try:
-        url = "https://supabase.co"
+        url = f"https://supabase.co{tabela}"
         nova_chave = "sb_publishable_gBU-BMvqUKIoTlXppK1_NA_SCQDl_OL"
         
         headers = {
@@ -139,10 +113,35 @@ def carregar_relatorios():
         if response.status_code == 200:
             dados = response.json()
             if dados and len(dados) > 0:
-                return pd.DataFrame(dados)
+                df = pd.DataFrame(dados)
+                if "data_alerta" in df.columns:
+                    df = df.sort_values(by="data_alerta", ascending=False)
+                return df
         return pd.DataFrame()
     except Exception:
         return pd.DataFrame()
+
+def carregar_sinais():
+    df = carregar_dados_api("sinais")
+    if df is not None and not df.empty:
+        df_formatado = pd.DataFrame()
+        df_formatado["Data Alerta"] = df["data_alerta"] if "data_alerta" in df.columns else ""
+        df_formatado["Nome do Ativo"] = df["ativo"] if "ativo" in df.columns else ""
+        if "direcao" in df.columns:
+            df_formatado["Direção"] = df["direcao"].apply(lambda x: "🟩 LONG" if 'LONG' in str(x).upper() else "🟥 SHORT")
+        else:
+            df_formatado["Direção"] = ""
+        df_formatado["Rompimento"] = "T 30 min"
+        df_formatado["Preço"] = df["preco"] if "preco" in df.columns else 0.0
+        df_formatado["Volume"] = df["volume"] if "volume" in df.columns else ""
+        return df_formatado
+    return pd.DataFrame()
+
+def carregar_relatorios():
+    df = carregar_dados_api("relatorios")
+    if df is not None and not df.empty:
+        return df
+    return pd.DataFrame()
 
 # ==========================================
 # RENDERIZAÇÃO DA TELA SELECIONADA
