@@ -100,6 +100,7 @@ with st.sidebar:
 # ==========================================
 def carregar_dados_api(tabela):
     try:
+        # URL oficial absoluta para requisições REST sem subpastas extras
         url = f"https://supabase.co{tabela}"
         nova_chave = "sb_publishable_gBU-BMvqUKIoTlXppK1_NA_SCQDl_OL"
         
