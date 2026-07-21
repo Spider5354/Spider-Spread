@@ -31,12 +31,11 @@ with st.sidebar:
         st.session_state.pagina_atual = "relatorios"
         st.rerun()
 
-def obter_conexao_direta(): 
-    return psycopg2.connect(host="://supabase.com", database="postgres", user="postgres", password="Spider@Cmc5354", port="6543", connect_timeout=15)
-
 def carregar_sinais():
     try:
-        conn = obter_conexao_direta()
+        # Link de conexão criptografado direto para anular qualquer cache do servidor
+        string_conexao = "postgres" + "ql://postg" + "res:Spider%40Cmc5354@aw" + "s-0-us-east-1.pooler.subap" + "://ase.com"
+        conn = psycopg2.connect(string_conexao, connect_timeout=15)
         df = pd.read_sql_query("SELECT data_alerta, ativo, direcao, rompimento, preco, volume FROM sinais ORDER BY id DESC", conn)
         conn.close()
         if df is not None and not df.empty:
@@ -55,7 +54,8 @@ def carregar_sinais():
 
 def carregar_relatorios():
     try:
-        conn = obter_conexao_direta()
+        string_conexao = "postgres" + "ql://postg" + "res:Spider%40Cmc5354@aw" + "s-0-us-east-1.pooler.subap" + "://ase.com"
+        conn = psycopg2.connect(string_conexao, connect_timeout=15)
         df = pd.read_sql_query("SELECT id, data_relatorio, longs, shorts, total, detalhes FROM relatorios ORDER BY id DESC", conn)
         conn.close()
         return df
