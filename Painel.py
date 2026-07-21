@@ -100,16 +100,27 @@ with st.sidebar:
 import psycopg2
 
 def obter_conexao_direta():
-    # Puxa os dados cadastrados nos Secrets de forma isolada e limpa
     config = st.secrets["connections"]["postgresql"]
-    return psycopg2.connect(
-        host=config["host"],
-        database=config["database"],
-        user=config["username"],
-        password=config["password"],
-        port=config["port"],
-        connect_timeout=15
-    )
+    try:
+        # Tenta conectar pelo Host normal
+        return psycopg2.connect(
+            host=config["host"],
+            database=config["database"],
+            user=config["username"],
+            password=config["password"],
+            port=config["port"],
+            connect_timeout=10
+        )
+    except Exception:
+        # Se o DNS do Streamlit falhar, ele usa o IP direto alternativo da AWS do Supabase automaticamente
+        return psycopg2.connect(
+            host="3.131.250.91", 
+            database=config["database"],
+            user=config["username"],
+            password=config["password"],
+            port=config["port"],
+            connect_timeout=10
+        )
 
 def carregar_sinais():
     try:
