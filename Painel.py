@@ -187,3 +187,53 @@ elif st.session_state.pagina_atual == "relatorios":
 # Auto-refresh de 10 segundos
 time.sleep(10)
 st.rerun()
+
+# ==========================================
+# RENDERIZAÇÃO DA TELA SELECIONADA
+# ==========================================
+if st.session_state.pagina_atual == "alertas":
+    st.markdown("<h1 style='color: #111111;' translate='no'>Alertas Milionários</h1>", unsafe_allow_html=True)
+    st.caption("Acompanhamento de rompimentos de pivot e pullbacks por zona sincronizados com o robô Python na Nuvem")
+    st.markdown("<br>", unsafe_allow_html=True)
+
+    df_sinais = carregar_sinais()
+    if df_sinais is not None and not df_sinais.empty:
+        st.dataframe(df_sinais, use_container_width=True, hide_index=True)
+    else:
+        st.info("Aguardando os novos sinais do robô na nuvem...")
+
+elif st.session_state.pagina_atual == "relatorios":
+    st.markdown("<h1 style='color: #111111;'>Histórico de Relatórios Diários (21h)</h1>", unsafe_allow_html=True)
+    st.caption("Central de fechamento operacional gravado de forma automática todas as noites na nuvem")
+    st.markdown("<br>", unsafe_allow_html=True)
+
+    df_repor = carregar_relatorios()
+    if df_repor is not None and not df_repor.empty:
+        datas_disponiveis = df_repor['data_relatorio'].tolist()
+        data_selecionada = st.selectbox("📅 Selecione a data do relatório que deseja revisar:", datas_disponiveis)
+        
+        linha_selecionada = df_repor[df_repor['data_relatorio'] == data_selecionada]
+        
+        if not linha_selecionada.empty:
+            l_longs = linha_selecionada['longs'].values[0]
+            l_shorts = linha_selecionada['shorts'].values[0]
+            l_total = linha_selecionada['total'].values[0]
+            l_detalhes = linha_selecionada['detalhes'].values[0]
+            
+            col1, col2, col3 = st.columns(3)
+            with col1:
+                st.metric("🟩 Sinais LONG", str(l_longs))
+            with col2:
+                st.metric("🟥 Sinais SHORT", str(l_shorts))
+            with col3:
+                st.metric("🔢 Total do Dia", str(l_total))
+            
+            st.markdown("---")
+            st.markdown(f"### 📋 Ativos Operados em {data_selecionada}:")
+            st.text(str(l_detalhes))
+    else:
+        st.info("Ainda não há relatórios gravados às 21h na nuvem.")
+
+# Auto-refresh de 10 segundos
+time.sleep(10)
+st.rerun()
