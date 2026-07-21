@@ -168,23 +168,24 @@ elif st.session_state.pagina_atual == "relatorios":
         
         linha_selecionada = df_repor[df_repor['data_relatorio'] == data_selecionada]
         
-        if not linha_selecionada.empty:
-            l_longs = linha_selecionada['longs'].values
-            l_shorts = linha_selecionada['shorts'].values
-            l_total = linha_selecionada['total'].values
-            l_detalhes = linha_selecionada['detalhes'].values
+                if not linha_selecionada.empty:
+            l_longs = linha_selecionada['longs'].values[0]
+            l_shorts = linha_selecionada['shorts'].values[0]
+            l_total = linha_selecionada['total'].values[0]
+            l_detalhes = linha_selecionada['detalhes'].values[0]
             
-                        col1, col2, col3 = st.columns(3)
+            col1, col2, col3 = st.columns(3)
             with col1:
-                st.metric("🟩 Sinais LONG", str(l_longs[0]))
+                st.metric("🟩 Sinais LONG", str(l_longs))
             with col2:
-                st.metric("🔴 Sinais SHORT", str(l_shorts[0]))
+                st.metric("🔴 Sinais SHORT", str(l_shorts))
             with col3:
-                st.metric("🔢 Total do Dia", str(l_total[0]))
+                st.metric("🔢 Total do Dia", str(l_total))
             
             st.markdown("---")
             st.markdown(f"### 📋 Ativos Operados em {data_selecionada}:")
-            st.text(l_detalhes[0])
+            st.text(l_detalhes)
+
     else:
         st.info("Ainda não há relatórios gravados às 21h pelo robô Python.")
 
