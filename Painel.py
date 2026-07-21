@@ -119,10 +119,22 @@ def carregar_dados_api(tabela):
         return pd.DataFrame()
 
 def carregar_sinais():
-    return carregar_dados_api("sinais")
+    df = carregar_dados_api("sinais")
+    if df is not None and not df.empty:
+        # Garante que as colunas vindas do Supabase existam antes de renomear
+        colunas_necessarias = ["data_alerta", "ativo", "direcao", "rompimento", "preco", "volume"]
+        # Filtra apenas as colunas que vieram na API para não quebrar o layout
+        df = df[[col for col in colunas_necessarias if col in df.columns]]
+        return df
+    return pd.DataFrame()
 
 def carregar_relatorios():
-    return carregar_dados_api("relatorios")
+    df = carregar_dados_api("relatorios")
+    if df is not None and not df.empty:
+        colunas_necessarias = ["id", "data_relatorio", "longs", "shorts", "total", "detalhes"]
+        df = df[[col for col in colunas_necessarias if col in df.columns]]
+        return df
+    return pd.DataFrame()
 
 # ==========================================
 # RENDERIZAÇÃO DA TELA SELECIONADA
