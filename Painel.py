@@ -16,7 +16,7 @@ if "pagina_atual" not in st.session_state:
 st.markdown(
     """
     <style>
-        /* 1. Altera a barra lateral para o Degradê de Azul */
+        /* 1. Barra lateral com o Degradê de Azul do Spider */
         section[data-testid="stSidebar"] {
             background-image: linear-gradient(180deg, #4da6ff 0%, #003366 100%) !important;
             background-color: #4da6ff !important;
@@ -34,7 +34,7 @@ st.markdown(
             background-color: #fff2f2 !important;
         }
         
-        /* CORREÇÃO: Estiliza os botões NATIVOS do Streamlit para ficarem vermelhos e idênticos ao seu print */
+        /* Estilização dos botões nativos em Vermelho Aranha com texto Branco */
         div.stButton > button {
             background-color: #ff000d !important;
             color: #ffffff !important;
@@ -72,21 +72,20 @@ with st.sidebar:
     )
     st.markdown("<br><hr style='border-color: rgba(255,255,255,0.3);'>", unsafe_allow_html=True)
     
-    # Injeta a tag de bloqueio de tradução temporária diretamente no escopo do botão
+    # Nomes curtos e isolados para blindar o tradutor do Chrome de vez
     st.markdown('<div translate="no">', unsafe_allow_html=True)
     
-    # BOTÕES NATIVOS COM RETORNO DE CLIQUE REAL
-    if st.button("📢 Alertas Milionários", key="btn_alertas_real", use_container_width=True):
+    if st.button("📢 Alertas", key="btn_alertas_curto", use_container_width=True):
         st.session_state.pagina_atual = "alertas"
         st.rerun()
         
-    if st.button("📊 Relatórios Diários", key="btn_relatorios_real", use_container_width=True):
+    if st.button("📊 Relatórios", key="btn_relatorios_curto", use_container_width=True):
         st.session_state.pagina_atual = "relatorios"
         st.rerun()
         
     st.markdown('</div>', unsafe_allow_html=True)
     
-    st.markdown("<br><br><br><br><br>", unsafe_allow_html=True)
+    <br><br><br><br><br>
     st.markdown("<hr style='border-color: rgba(255,255,255,0.2);'>", unsafe_allow_html=True)
     st.markdown("<div class='historico-carlos' translate='no'>📋 Histórico de Carlos Caldeira</div>", unsafe_allow_html=True)
 
@@ -136,7 +135,6 @@ elif st.session_state.pagina_atual == "relatorios":
         datas_disponiveis = df_repor['data_relatorio'].tolist()
         data_selecionada = st.selectbox("📅 Selecione a data do relatório que deseja revisar:", datas_disponiveis)
         
-        # Filtra a linha correspondente à data escolhida
         linha_relatorio = df_repor[df_repor['data_relatorio'] == data_selecionada].iloc[0]
         
         col1, col2, col3 = st.columns(3)
@@ -148,7 +146,7 @@ elif st.session_state.pagina_atual == "relatorios":
         st.markdown(f"### 📋 Ativos Operados em {data_selecionada}:")
         st.text(linha_relatorio['detalhes'])
     else:
-        st.info("Ainda não há relatórios gravados às 21h pelo robô Python. O primeiro fechamento aparecerá aqui de forma automática!")
+        st.info("Ainda não há relatórios gravados às 21h. O primeiro fechamento aparecerá aqui de forma automática!")
 
 # Auto-refresh de 10 segundos
 time.sleep(10)
