@@ -100,12 +100,13 @@ with st.sidebar:
 # ==========================================
 def obter_conexao_direta():
     return psycopg2.connect(
-        host="aws-0-us-east-1.pooler.supabase.com",
+        host="://supabase.com",
         database="postgres",
-        user="postgres",
+        user="postgres.azyrogbqlgeknojszgua",
         password="Spider@Cmc5354",
         port="6543",
-        connect_timeout=15
+        connect_timeout=15,
+        options="-c search_path=public,extensions"
     )
 
 def carregar_sinais():
