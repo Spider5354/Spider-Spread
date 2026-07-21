@@ -7,10 +7,10 @@ import time
 st.set_page_config(page_title="Spider Spread - Painel de Sinais", layout="wide")
 
 # ==========================================
-# STRING DE CONEXÃO DA SUPABASE (CALIBRADA)
+# STRING DE CONEXÃO DA SUPABASE (CORRIGIDA)
 # ==========================================
-# Uso do conector direto e limpo que o Python valida sem erros
-DB_URL_NUVEM = "postgres://postgres:Spider%40Cmc5354@aws-0-sa-east-1.pooler.supabase.co:6543/postgres"
+# Ajustado para postgresql:// e usando o Pooler oficial da Supabase porta 6543
+DB_URL_NUVEM = "postgresql://postgres:Spider%40Cmc5354@aws-0-sa-east-1.pooler.supabase.co:6543/postgres"
 
 # Definição da senha de acesso VIP do painel
 SENHA_CORRETA = "Spider@VIP5354"
@@ -102,28 +102,28 @@ with st.sidebar:
     st.markdown("<div class='historico-carlos' translate='no'>📋 Histórico de Carlos Caldeira</div>", unsafe_allow_html=True)
 
 # ==========================================
-# FUNÇÕES DE BUSCA DE DADOS COM DIAGNÓSTICO DE ERROS
+# FUNÇÕES DE BUSCA DE DADOS (COM ASPAS DUPLAS)
 # ==========================================
 def carregar_sinais():
     try:
         conn = psycopg2.connect(DB_URL_NUVEM)
-        df = pd.read_sql_query("SELECT data_alerta, ativo, direcao, rompimento, preco, volume FROM sinais ORDER BY id DESC", conn)
+        # CORREÇÃO: Aspas duplas forçam o banco na nuvem a encontrar a tabela exata
+        df = pd.read_sql_query('SELECT data_alerta, ativo, direcao, rompimento, preco, volume FROM "sinais" ORDER BY id DESC', conn)
         conn.close()
         return df
-    except Exception as e:
-        # CORREÇÃO INFORMATIVA: Se der erro, ele avisa na tela o motivo exato
-        st.error(f"⚠️ Erro de Leitura de Sinais na Nuvem: {e}")
+    except Exception as e: 
+        st.error(f"⚠️ Erro de Leitura na Nuvem: {e}")
         return pd.DataFrame()
 
 def carregar_relatorios():
     try:
         conn = psycopg2.connect(DB_URL_NUVEM)
-        df = pd.read_sql_query("SELECT id, data_relatorio, longs, shorts, total, detalhes FROM relatorios ORDER BY id DESC", conn)
+        # CORREÇÃO: Aspas duplas forçam o banco na nuvem a encontrar a tabela exata
+        df = pd.read_sql_query('SELECT id, data_relatorio, longs, shorts, total, detalhes FROM "relatorios" ORDER BY id DESC', conn)
         conn.close()
         return df
-    except Exception as e:
-        # CORREÇÃO INFORMATIVA: Se der erro, ele avisa na tela o motivo exato
-        st.error(f"⚠️ Erro de Leitura de Relatórios na Nuvem: {e}")
+    except Exception as e: 
+        st.error(f"⚠️ Erro de Leitura na Nuvem: {e}")
         return pd.DataFrame()
 
 # ==========================================
