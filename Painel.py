@@ -105,13 +105,16 @@ def carregar_dados_api(tabela):
             "apikey": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF6eXJvZ2JxbGdla25vanN6Z3VhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MTkwMjc0NDMsImV4cCI6MjAzNDYwMzQ0M30.4M3N1X2Z_vX8F7-9z_fWf3b8_Yt9_M2v_u1_X9_Z8_Y",
             "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF6eXJvZ2JxbGdla25vanN6Z3VhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MTkwMjc0NDMsImV4cCI6MjAzNDYwMzQ0M30.4M3N1X2Z_vX8F7-9z_fWf3b8_Yt9_M2v_u1_X9_Z8_Y"
         }
-        params = {"order": "id.desc"}
-        
-        response = requests.get(url, headers=headers, params=params, timeout=10)
+        # Removemos o parâmetro "params" que forçava a ordenação pelo ID
+        response = requests.get(url, headers=headers, timeout=10)
         if response.status_code == 200:
             dados = response.json()
             if dados and len(dados) > 0:
-                return pd.DataFrame(dados)
+                df = pd.DataFrame(dados)
+                # Ordena os sinais de forma manual no Python usando a data
+                if "data_alerta" in df.columns:
+                    df = df.sort_values(by="data_alerta", ascending=False)
+                return df
         return pd.DataFrame()
     except Exception:
         return pd.DataFrame()
