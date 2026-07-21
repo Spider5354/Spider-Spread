@@ -109,8 +109,8 @@ def obter_cliente_supabase() -> Client:
 def carregar_sinais():
     try:
         supabase = obter_cliente_supabase()
-        # Faz uma requisição HTTP limpa (Porta 443) pegando os dados em tempo real
-        resposta = supabase.table("sinais").select("data_alerta, ativo, direcao, rompimento, preco, volume").order("id", descending=True).execute()
+        # Corrigido o parâmetro de ordenação de 'descending' para 'desc'
+        resposta = supabase.table("sinais").select("data_alerta, ativo, direcao, rompimento, preco, volume").order("id", desc=True).execute()
         
         if resposta.data and len(resposta.data) > 0:
             return pd.DataFrame(resposta.data)
@@ -118,6 +118,20 @@ def carregar_sinais():
     except Exception as e: 
         st.error(f"Erro ao ler sinais via API: {e}")
         return pd.DataFrame()
+
+def carregar_relatorios():
+    try:
+        supabase = obter_cliente_supabase()
+        # Corrigido o parâmetro de ordenação de 'descending' para 'desc'
+        resposta = supabase.table("relatorios").select("id, data_relatorio, longs, shorts, total, detalhes").order("id", desc=True).execute()
+        
+        if resposta.data and len(resposta.data) > 0:
+            return pd.DataFrame(resposta.data)
+        return pd.DataFrame()
+    except Exception as e: 
+        st.error(f"Erro ao ler relatórios via API: {e}")
+        return pd.DataFrame()
+
 
 def carregar_relatorios():
     try:
