@@ -99,7 +99,6 @@ with st.sidebar:
 # FUNÇÕES DE BUSCA VIA POOLER SEGURO AWS
 # ==========================================
 def obter_conexao_direta():
-    # Conecta via Session Pooler usando o host oficial da AWS
     return psycopg2.connect(
         host="aws-0-us-east-1.pooler.supabase.com",
         database="postgres",
@@ -111,7 +110,7 @@ def obter_conexao_direta():
 
 def carregar_sinais():
     try:
-        conn = obter_conexao_direta()  # <-- GARANTA QUE ESTÁ ASSIM (Chama a função segura)
+        conn = obter_conexao_direta()
         df = pd.read_sql_query("SELECT data_alerta, ativo, direcao, rompimento, preco, volume FROM sinais ORDER BY id DESC", conn)
         conn.close()
         
@@ -134,7 +133,7 @@ def carregar_sinais():
 
 def carregar_relatorios():
     try:
-        conn = obter_conexao_direta()  # <-- GARANTA QUE ESTÁ ASSIM (Chama a função segura)
+        conn = obter_conexao_direta()
         df = pd.read_sql_query("SELECT id, data_relatorio, longs, shorts, total, detalhes FROM relatorios ORDER BY id DESC", conn)
         conn.close()
         if df is not None and len(df) > 0:
@@ -142,7 +141,6 @@ def carregar_relatorios():
         return pd.DataFrame()
     except Exception:
         return pd.DataFrame()
-)
 
 # ==========================================
 # RENDERIZAÇÃO DA TELA SELECIONADA
