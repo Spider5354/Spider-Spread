@@ -99,12 +99,11 @@ with st.sidebar:
 # ==========================================
 def carregar_sinais():
     try:
-        # Puxa os dados com o motor nativo e seguro do Streamlit Cloud
         conn = st.connection("postgresql", type="sql")
         df = conn.query("SELECT data_alerta, ativo, direcao, rompimento, preco, volume FROM sinais ORDER BY id DESC", ttl="10s")
         return pd.DataFrame(df)
     except Exception as e: 
-        st.error(f"⚠️ Erro de Leitura na Nuvem: {e}")
+        st.error(f"⚠️ Erro de Leitura de Sinais na Nuvem: {e}")
         return pd.DataFrame()
 
 def carregar_relatorios():
@@ -113,7 +112,7 @@ def carregar_relatorios():
         df = conn.query("SELECT id, data_relatorio, longs, shorts, total, detalhes FROM relatorios ORDER BY id DESC", ttl="10s")
         return pd.DataFrame(df)
     except Exception as e: 
-        st.error(f"⚠️ Erro de Leitura na Nuvem: {e}")
+        st.error(f"⚠️ Erro de Leitura de Relatórios na Nuvem: {e}")
         return pd.DataFrame()
 
 # ==========================================
@@ -125,7 +124,7 @@ if st.session_state.pagina_atual == "alertas":
     st.markdown("<br>", unsafe_allow_html=True)
 
     df_sinais = carregar_sinais()
-    if not df_sinais.empty:
+    if df_sinais is not None and not df_sinais.empty:
         df_sinais['direcao'] = df_sinais['direcao'].apply(lambda x: "🟩 LONG" if 'LONG' in str(x).upper() else "🟥 SHORT")
         df_sinais['rompimento'] = "T 30 min"
         df_sinais.columns = ["Data Alerta", "Nome do Ativo", "Direção", "Rompimento", "Preço", "Volume"]
@@ -139,15 +138,16 @@ elif st.session_state.pagina_atual == "relatorios":
     st.markdown("<br>", unsafe_allow_html=True)
 
     df_repor = carregar_relatorios()
-    if not df_repor.empty:
+    if df_repor is not None and not df_repor.empty:
         datas_disponiveis = df_repor['data_relatorio'].tolist()
         data_selecionada = st.selectbox("📅 Selecione a data do relatório que deseja revisar:", datas_disponiveis)
-        linha_relatorio = df_repor[df_repor['data_relatorio'] == data_selecionada].iloc
+        
+        linha_relatorio = df_repor[df_repor['data_relatorio'] == data_selecionada].iloc[0]
         
         col1, col2, col3 = st.columns(3)
-        col1.metric("🟩 Sinais LONG", int(linha_relatorio['longs']))
-        col2.metric("🔴 Sinais SHORT", int(linha_relatorio['shorts']))
-        col3.metric("🔢 Total do Dia", int(linha_relatorio['total']))
+        col1.metric("🟩 Sinais LONG", int(linha_relatorio['longs']) if pd.notna(linha_relatorio['longs']) else 0)
+        col2.metric("🟥 Sinais SHORT", int(linha_relatorio['shorts']) if pd.notna(linha_relatorio['shorts']) else 0)
+        col3.metric("🔢 Total do Dia", int(linha_relatorio['total']) if pd.notna(linha_relatorio['total']) else 0)
         
         st.markdown("---")
         st.markdown(f"### 📋 Ativos Operados em {data_selecionada}:")
