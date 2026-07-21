@@ -99,7 +99,7 @@ with st.sidebar:
 # FUNÇÕES DE BUSCA VIA POOLER SEGURO AWS
 # ==========================================
 def obter_conexao_direta():
-    # Conecta via Session Pooler através da porta estável 6543 ignorando bloqueios de API HTTP
+    # Conecta via Session Pooler através da porta estável 6543 usando o host correto do projeto
     return psycopg2.connect(
         host="://supabase.com",
         database="postgres",
@@ -175,19 +175,19 @@ elif st.session_state.pagina_atual == "relatorios":
             l_total = linha_selecionada['total'].values
             l_detalhes = linha_selecionada['detalhes'].values
             
-            col1, col2, col3 = st.columns(3)
+                        col1, col2, col3 = st.columns(3)
             with col1:
-                st.metric("🟩 Sinais LONG", str(l_longs))
+                st.metric("🟩 Sinais LONG", str(l_longs[0]))
             with col2:
-                st.metric("🟥 Sinais SHORT", str(l_shorts))
+                st.metric("🔴 Sinais SHORT", str(l_shorts[0]))
             with col3:
-                st.metric("🔢 Total do Dia", str(l_total))
+                st.metric("🔢 Total do Dia", str(l_total[0]))
             
             st.markdown("---")
             st.markdown(f"### 📋 Ativos Operados em {data_selecionada}:")
-            st.text(str(l_detalhes))
+            st.text(l_detalhes[0])
     else:
-        st.info("Ainda não há relatórios gravados às 21h na nuvem.")
+        st.info("Ainda não há relatórios gravados às 21h pelo robô Python.")
 
 # Auto-refresh de 10 segundos
 time.sleep(10)
