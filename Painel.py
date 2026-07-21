@@ -102,16 +102,17 @@ with st.sidebar:
     st.markdown("<div class='historico-carlos' translate='no'>📋 Histórico de Carlos Caldeira</div>", unsafe_allow_html=True)
 
 # ==========================================
-# FUNÇÕES DE BUSCA DE DADOS (IGUAL AO SCRIPT LOCAL)
+# FUNÇÕES DE BUSCA DE DADOS COM DIAGNÓSTICO DE ERROS
 # ==========================================
-# Copiamos exatamente o mesmo formato read_sql_query que funcionou de primeira na sua máquina
 def carregar_sinais():
     try:
         conn = psycopg2.connect(DB_URL_NUVEM)
         df = pd.read_sql_query("SELECT data_alerta, ativo, direcao, rompimento, preco, volume FROM sinais ORDER BY id DESC", conn)
         conn.close()
         return df
-    except Exception: 
+    except Exception as e:
+        # CORREÇÃO INFORMATIVA: Se der erro, ele avisa na tela o motivo exato
+        st.error(f"⚠️ Erro de Leitura de Sinais na Nuvem: {e}")
         return pd.DataFrame()
 
 def carregar_relatorios():
@@ -120,7 +121,9 @@ def carregar_relatorios():
         df = pd.read_sql_query("SELECT id, data_relatorio, longs, shorts, total, detalhes FROM relatorios ORDER BY id DESC", conn)
         conn.close()
         return df
-    except Exception: 
+    except Exception as e:
+        # CORREÇÃO INFORMATIVA: Se der erro, ele avisa na tela o motivo exato
+        st.error(f"⚠️ Erro de Leitura de Relatórios na Nuvem: {e}")
         return pd.DataFrame()
 
 # ==========================================
