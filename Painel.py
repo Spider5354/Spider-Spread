@@ -46,13 +46,19 @@ with st.sidebar:
     st.markdown("<div class='historico-carlos' translate='no'>📋 Histórico de Carlos Caldeira</div>", unsafe_allow_html=True)
 
 def obter_conexao_direta():
-    host_oficial = "://supabase.com"
+    # Definição manual e forçada para quebrar qualquer cache antigo
+    config_host = "://supabase.com"
+    config_user = "postgres"
+    config_pass = "Spider@Cmc5354"
+    config_port = "6543"
+    config_db   = "postgres"
+    
     return psycopg2.connect(
-        host=host_oficial,
-        database="postgres",
-        user="postgres",
-        password="Spider@Cmc5354",
-        port="6543",
+        host=config_host,
+        database=config_db,
+        user=config_user,
+        password=config_pass,
+        port=config_port,
         connect_timeout=15
     )
 
