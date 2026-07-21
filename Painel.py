@@ -95,13 +95,13 @@ with st.sidebar:
     st.markdown("<div class='historico-carlos' translate='no'>📋 Histórico de Carlos Caldeira</div>", unsafe_allow_html=True)
 
 # ==========================================
-# FUNÇÕES DE BUSCA VIA API SUPABASE (BURLA O BLOQUEIO DE PORTA 5432)
+# FUNÇÕES DE BUSCA VIA API SUPABASE (PROTEGIDA)
 # ==========================================
 from supabase import create_client, Client
 
 SUPABASE_URL = "https://supabase.co"
-# Esta chave pública padrão/anon permite ler as tabelas sem passar pela porta 5432
-SUPABASE_KEY = st.secrets.get("SUPABASE_KEY", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF6eXJvZ2JxbGdla25vanN6Z3VhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MTkwMjc0NDMsImV4cCI6MjAzNDYwMzQ0M30.4M3N1X2Z_vX8F7-9z_fWf3b8_Yt9_M2v_u1_X9_Z8_Y")
+# Puxa a chave de forma totalmente segura a partir dos Secrets ocultos do Streamlit
+SUPABASE_KEY = st.secrets["SUPABASE_KEY"]
 
 def obter_cliente_supabase() -> Client:
     return create_client(SUPABASE_URL, SUPABASE_KEY)
