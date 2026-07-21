@@ -46,27 +46,22 @@ with st.sidebar:
     st.markdown("<div class='historico-carlos' translate='no'>📋 Histórico de Carlos Caldeira</div>", unsafe_allow_html=True)
 
 def obter_conexao_direta():
-    # Definição manual e forçada para quebrar qualquer cache antigo
-    config_host="://supabase.com"
-    config_user = "postgres"
-    config_pass = "Spider@Cmc5354"
-    config_port = "6543"
-    config_db   = "postgres"
-    
     return psycopg2.connect(
-        host=config_host,
-        database=config_db,
-        user=config_user,
-        password=config_pass,
-        port=config_port,
+        host="://supabase.com",
+        database="postgres",
+        user="postgres",
+        password="Spider@Cmc5354",
+        port="6543",
         connect_timeout=15
     )
 
 def carregar_sinais():
     try:
+        # Força o uso da função limpa da AWS
         conn = obter_conexao_direta()
         df = pd.read_sql_query("SELECT data_alerta, ativo, direcao, rompimento, preco, volume FROM sinais ORDER BY id DESC", conn)
         conn.close()
+        
         if df is not None and not df.empty:
             df_formatado = pd.DataFrame()
             df_formatado["Data Alerta"] = df["data_alerta"] if "data_alerta" in df.columns else ""
@@ -86,13 +81,15 @@ def carregar_sinais():
 
 def carregar_relatorios():
     try:
+        # Força o uso da função limpa da AWS eliminando conexões antigas escondidas
         conn = obter_conexao_direta()
         df = pd.read_sql_query("SELECT id, data_relatorio, longs, shorts, total, detalhes FROM relatorios ORDER BY id DESC", conn)
         conn.close()
         if df is not None and len(df) > 0:
             return df
         return pd.DataFrame()
-    except Exception:
+    except Exception as e:
+        st.error(f"Erro ao ler relatórios do banco: {e}")
         return pd.DataFrame()
 
 if st.session_state.pagina_atual == "alertas":
