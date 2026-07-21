@@ -1,7 +1,7 @@
 import streamlit as st
 import pandas as pd
 import time
-import requests
+import psycopg2
 
 # Configuração da página web
 st.set_page_config(page_title="Spider Spread - Painel de Sinais", layout="wide")
@@ -96,53 +96,52 @@ with st.sidebar:
     st.markdown("<div class='historico-carlos' translate='no'>📋 Histórico de Carlos Caldeira</div>", unsafe_allow_html=True)
 
 # ==========================================
-# FUNÇÕES DE BUSCA VIA NOVA DATA API (URL REALINHADA)
+# FUNÇÕES DE BUSCA VIA POOLER SEGURO AWS
 # ==========================================
-def carregar_dados_api(tabela):
+def obter_conexao_direta():
+    # Conecta via Session Pooler através da porta estável 6543 ignorando bloqueios de API HTTP
+    return psycopg2.connect(
+        host="://supabase.com",
+        database="postgres",
+        user="postgres.azyrogbqlgeknojszgua",
+        password="Spider@Cmc5354",
+        port="6543",
+        connect_timeout=15
+    )
+
+def carregar_sinais():
     try:
-        # URL oficial absoluta para requisições REST sem subpastas extras
-        url = f"https://supabase.co{tabela}"
-        nova_chave = "sb_publishable_gBU-BMvqUKIoTlXppK1_NA_SCQDl_OL"
+        conn = obter_conexao_direta()
+        df = pd.read_sql_query("SELECT data_alerta, ativo, direcao, rompimento, preco, volume FROM sinais ORDER BY id DESC", conn)
+        conn.close()
         
-        headers = {
-            "apikey": nova_chave,
-            "Authorization": f"Bearer {nova_chave}",
-            "Cache-Control": "no-cache"
-        }
-        
-        response = requests.get(url, headers=headers, timeout=10)
-        if response.status_code == 200:
-            dados = response.json()
-            if dados and len(dados) > 0:
-                df = pd.DataFrame(dados)
-                if "data_alerta" in df.columns:
-                    df = df.sort_values(by="data_alerta", ascending=False)
-                return df
+        if df is not None and not df.empty:
+            df_formatado = pd.DataFrame()
+            df_formatado["Data Alerta"] = df["data_alerta"] if "data_alerta" in df.columns else ""
+            df_formatado["Nome do Ativo"] = df["ativo"] if "ativo" in df.columns else ""
+            if "direcao" in df.columns:
+                df_formatado["Direção"] = df["direcao"].apply(lambda x: "🟩 LONG" if 'LONG' in str(x).upper() else "🟥 SHORT")
+            else:
+                df_formatado["Direção"] = ""
+            df_formatado["Rompimento"] = "T 30 min"
+            df_formatado["Preço"] = df["preco"] if "preco" in df.columns else 0.0
+            df_formatado["Volume"] = df["volume"] if "volume" in df.columns else ""
+            return df_formatado
+        return pd.DataFrame()
+    except Exception as e:
+        st.error(f"Erro ao ler sinais do banco: {e}")
+        return pd.DataFrame()
+
+def carregar_relatorios():
+    try:
+        conn = obter_conexao_direta()
+        df = pd.read_sql_query("SELECT id, data_relatorio, longs, shorts, total, detalhes FROM relatorios ORDER BY id DESC", conn)
+        conn.close()
+        if df is not None and len(df) > 0:
+            return df
         return pd.DataFrame()
     except Exception:
         return pd.DataFrame()
-
-def carregar_sinais():
-    df = carregar_dados_api("sinais")
-    if df is not None and not df.empty:
-        df_formatado = pd.DataFrame()
-        df_formatado["Data Alerta"] = df["data_alerta"] if "data_alerta" in df.columns else ""
-        df_formatado["Nome do Ativo"] = df["ativo"] if "ativo" in df.columns else ""
-        if "direcao" in df.columns:
-            df_formatado["Direção"] = df["direcao"].apply(lambda x: "🟩 LONG" if 'LONG' in str(x).upper() else "🟥 SHORT")
-        else:
-            df_formatado["Direção"] = ""
-        df_formatado["Rompimento"] = "T 30 min"
-        df_formatado["Preço"] = df["preco"] if "preco" in df.columns else 0.0
-        df_formatado["Volume"] = df["volume"] if "volume" in df.columns else ""
-        return df_formatado
-    return pd.DataFrame()
-
-def carregar_relatorios():
-    df = carregar_dados_api("relatorios")
-    if df is not None and not df.empty:
-        return df
-    return pd.DataFrame()
 
 # ==========================================
 # RENDERIZAÇÃO DA TELA SELECIONADA
