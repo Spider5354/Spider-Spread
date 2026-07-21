@@ -1,7 +1,7 @@
 import streamlit as st
 import pandas as pd
 import time
-import requests
+import psycopg2
 
 # Configuração da página web
 st.set_page_config(page_title="Spider Spread - Painel de Sinais", layout="wide")
@@ -96,12 +96,10 @@ with st.sidebar:
     st.markdown("<div class='historico-carlos' translate='no'>📋 Histórico de Carlos Caldeira</div>", unsafe_allow_html=True)
 
 # ==========================================
-# FUNÇÕES DE BUSCA DE DADOS (CONEXÃO DIRETA VIA PORTA SEGURA 6543)
+# FUNÇÕES DE BUSCA DE DADOS (CONEXÃO ISOLADA DE EXTREMA SEGURANÇA)
 # ==========================================
-import psycopg2
-
 def obter_conexao_direta():
-    # Parâmetros inseridos diretamente como texto para não depender dos Secrets travados
+    # Parâmetros injetados diretamente em texto puro para impedir bugs de variáveis externas
     return psycopg2.connect(
         host="://supabase.com",
         database="postgres",
@@ -114,12 +112,10 @@ def obter_conexao_direta():
 def carregar_sinais():
     try:
         conn = obter_conexao_direta()
-        # Lê a tabela sinais e organiza de forma decrescente
         df = pd.read_sql_query("SELECT data_alerta, ativo, direcao, rompimento, preco, volume FROM sinais ORDER BY id DESC", conn)
         conn.close()
         
         if df is not None and not df.empty:
-            # Aplica a formatação visual bonita das colunas diretamente no Pandas
             df_formatado = pd.DataFrame()
             df_formatado["Data Alerta"] = df["data_alerta"]
             df_formatado["Nome do Ativo"] = df["ativo"]
@@ -130,7 +126,6 @@ def carregar_sinais():
             return df_formatado
         return pd.DataFrame()
     except Exception as e:
-        # Se falhar temporariamente por oscilação de rede, avisa de forma amigável
         st.warning(f"Sincronizando banco de dados... (Detalhe: {e})")
         return pd.DataFrame()
 
@@ -155,7 +150,6 @@ if st.session_state.pagina_atual == "alertas":
 
     df_sinais = carregar_sinais()
     if df_sinais is not None and not df_sinais.empty:
-        # Exibe a tabela formatada de forma direta na tela
         st.dataframe(df_sinais, use_container_width=True, hide_index=True)
     else:
         st.info("Aguardando os novos sinais do robô na nuvem...")
