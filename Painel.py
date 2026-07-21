@@ -104,7 +104,9 @@ def carregar_sinais():
         if df is not None and len(df) > 0:
             return pd.DataFrame(df)
         return pd.DataFrame()
-    except Exception: 
+    except Exception as e: 
+        # Alerta temporário para nos mostrar o erro exato na tela do painel
+        st.error(f"Erro de conexão no Painel: {e}")
         return pd.DataFrame()
 
 def carregar_relatorios():
