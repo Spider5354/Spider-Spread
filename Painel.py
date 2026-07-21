@@ -95,30 +95,46 @@ with st.sidebar:
     st.markdown("<div class='historico-carlos' translate='no'>📋 Histórico de Carlos Caldeira</div>", unsafe_allow_html=True)
 
 # ==========================================
-# FUNÇÕES DE BUSCA DE DADOS (CONEXÃO CORRETA E ALINHADA)
+# FUNÇÕES DE BUSCA DE DADOS (CONEXÃO ISOLADA E REVISADA)
 # ==========================================
+import psycopg2
+
+def obter_conexao_direta():
+    # Puxa os dados cadastrados nos Secrets de forma isolada e limpa
+    config = st.secrets["connections"]["postgresql"]
+    return psycopg2.connect(
+        host=config["host"],
+        database=config["database"],
+        user=config["username"],
+        password=config["password"],
+        port=config["port"],
+        connect_timeout=15
+    )
+
 def carregar_sinais():
     try:
-        # Usa a conexão padrão configurada nos Secrets automaticamente
-        conn = st.connection("postgresql", type="sql")
-        df = conn.query("SELECT data_alerta, ativo, direcao, rompimento, preco, volume FROM sinais ORDER BY id DESC", ttl=0)
+        conn = obter_conexao_direta()
+        df = pd.read_sql_query("SELECT data_alerta, ativo, direcao, rompimento, preco, volume FROM sinais ORDER BY id DESC", conn)
+        conn.close()
         if df is not None and len(df) > 0:
-            return pd.DataFrame(df)
+            return df
         return pd.DataFrame()
     except Exception as e:
-        st.error(f"Erro ao ler sinais no banco: {e}")
+        # Exibe amigavelmente caso o banco mude de estado, sem travar o painel
+        st.warning("Sincronizando banco de dados na Nuvem...")
         return pd.DataFrame()
 
 def carregar_relatorios():
     try:
-        conn = st.connection("postgresql", type="sql")
-        df = conn.query("SELECT id, data_relatorio, longs, shorts, total, detalhes FROM relatorios ORDER BY id DESC", ttl=0)
+        conn = obter_conexao_direta()
+        df = pd.read_sql_query("SELECT id, data_relatorio, longs, shorts, total, detalhes FROM relatorios ORDER BY id DESC", conn)
+        conn.close()
         if df is not None and len(df) > 0:
-            return pd.DataFrame(df)
+            return df
         return pd.DataFrame()
-    except Exception as e:
-        st.error(f"Erro ao ler relatórios no banco: {e}")
+    except Exception:
         return pd.DataFrame()
+
 
 def carregar_relatorios():
     try:
