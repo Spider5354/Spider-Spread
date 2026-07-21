@@ -121,11 +121,15 @@ def carregar_dados_api(tabela):
 def carregar_sinais():
     df = carregar_dados_api("sinais")
     if df is not None and not df.empty:
-        # Garante que as colunas vindas do Supabase existam antes de renomear
-        colunas_necessarias = ["data_alerta", "ativo", "direcao", "rompimento", "preco", "volume"]
-        # Filtra apenas as colunas que vieram na API para não quebrar o layout
-        df = df[[col for col in colunas_necessarias if col in df.columns]]
-        return df
+        # Cria um novo DataFrame organizando e formatando as colunas pelos nomes exatos da API
+        df_formatado = pd.DataFrame()
+        df_formatado["Data Alerta"] = df["data_alerta"]
+        df_formatado["Nome do Ativo"] = df["ativo"]
+        df_formatado["Direção"] = df["direcao"].apply(lambda x: "🟩 LONG" if 'LONG' in str(x).upper() else "🟥 SHORT")
+        df_formatado["Rompimento"] = "T 30 min"
+        df_formatado["Preço"] = df["preco"]
+        df_formatado["Volume"] = df["volume"]
+        return df_formatado
     return pd.DataFrame()
 
 def carregar_relatorios():
