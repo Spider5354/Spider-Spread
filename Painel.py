@@ -5,8 +5,8 @@ import time
 # Configuração da página web
 st.set_page_config(page_title="Spider Spread - Painel de Sinais", layout="wide")
 
-# Definição da senha de acesso VIP do painel
-SENHA_CORRETA = "Spider@VIP5354"
+# Definição da senha de acesso VIP do painel (ATUALIZADA)
+SENHA_CORRETA = "SpiderVIP.5354"
 
 if "autenticado" not in st.session_state:
     st.session_state.autenticado = False
