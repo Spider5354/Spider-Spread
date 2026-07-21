@@ -4,10 +4,8 @@ import time
 import psycopg2
 st.set_page_config(page_title="Spider Spread", layout="wide")
 SENHA_CORRETA = "SpiderVIP.5354"
-if "autenticado" not in st.session_state:
-st.session_state.autenticado = False
-if "pagina_atual" not in st.session_state:
-st.session_state.pagina_atual = "alertas"
+if "autenticado" not in st.session_state: st.session_state.autenticado = False
+if "pagina_atual" not in st.session_state: st.session_state.pagina_atual = "alertas"
 if not st.session_state.autenticado:
 st.title("Spider Spread VIP")
 with st.form("formulario_login", clear_on_submit=True):
@@ -31,14 +29,7 @@ if st.button("📊 Relatórios", key="btn_relatorios", use_container_width=True)
 st.session_state.pagina_atual = "relatorios"
 st.rerun()
 def obter_conexao_direta():
-return psycopg2.connect(
-host="supabase.com",
-database="postgres",
-user="postgres",
-password="Spider@Cmc5354",
-port="6543",
-connect_timeout=15
-)
+return psycopg2.connect(host="supabase.com", database="postgres", user="postgres", password="Spider@Cmc5354", port="6543", connect_timeout=15)
 def carregar_sinais():
 try:
 conn = obter_conexao_direta()
@@ -48,8 +39,7 @@ if df is not None and not df.empty:
 df_formatado = pd.DataFrame()
 df_formatado["Data Alerta"] = df["data_alerta"] if "data_alerta" in df.columns else ""
 df_formatado["Nome do Ativo"] = df["ativo"] if "ativo" in df.columns else ""
-if "direcao" in df.columns:
-df_formatado["Direção"] = df["direcao"].apply(lambda x: "LONG" if 'LONG' in str(x).upper() else "SHORT")
+if "direcao" in df.columns: df_formatado["Direção"] = df["direcao"].apply(lambda x: "LONG" if "LONG" in str(x).upper() else "SHORT")
 df_formatado["Rompimento"] = "T 30 min"
 df_formatado["Preço"] = df["preco"] if "preco" in df.columns else 0.0
 df_formatado["Volume"] = df["volume"] if "volume" in df.columns else ""
@@ -77,14 +67,14 @@ elif st.session_state.pagina_atual == "relatorios":
 st.title("Relatórios Diários")
 df_repor = carregar_relatorios()
 if df_repor is not None and not df_repor.empty:
-datas = df_repor['data_relatorio'].tolist()
+datas = df_repor["data_relatorio"].tolist()
 data_sel = st.selectbox("Selecione a data:", datas)
-linha = df_repor[df_repor['data_relatorio'] == data_sel]
+linha = df_repor[df_repor["data_relatorio"] == data_sel]
 if not linha.empty:
 col1, col2, col3 = st.columns(3)
-col1.metric("LONG", str(linha['longs'].values))
-col2.metric("SHORT", str(linha['shorts'].values))
-col3.metric("Total", str(linha['total'].values))
-st.text(str(linha['detalhes'].values))
+col1.metric("LONG", str(linha["longs"].values[0]))
+col2.metric("SHORT", str(linha["shorts"].values[0]))
+col3.metric("Total", str(linha["total"].values[0]))
+st.text(str(linha["detalhes"].values[0]))
 time.sleep(10)
 st.rerun()
