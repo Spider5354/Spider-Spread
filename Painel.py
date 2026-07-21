@@ -101,7 +101,7 @@ with st.sidebar:
 def obter_conexao_direta():
     # Conecta via Session Pooler através da porta estável 6543 usando o host correto do projeto
     return psycopg2.connect(
-        host="://supabase.com",
+        host="aws-0-us-east-1.pooler.supabase.com",
         database="postgres",
         user="postgres.azyrogbqlgeknojszgua",
         password="Spider@Cmc5354",
