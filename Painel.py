@@ -99,7 +99,6 @@ with st.sidebar:
 # FUNÇÕES DE BUSCA VIA POOLER SEGURO AWS
 # ==========================================
 def obter_conexao_direta():
-    # Conecta via Session Pooler através da porta estável 6543 usando o host correto do projeto
     return psycopg2.connect(
         host="://supabase.com",
         database="postgres",
