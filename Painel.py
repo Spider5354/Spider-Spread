@@ -148,14 +148,11 @@ if st.session_state.pagina_atual == "alertas":
     st.caption("Acompanhamento de rompimentos de pivot e pullbacks por zona sincronizados com o robô Python na Nuvem")
     st.markdown("<br>", unsafe_allow_html=True)
 
-    df_sinais = carregar_sinais()
-    if df_sinais is not None and not df_sinais.empty:
-        df_sinais['direcao'] = df_sinais['direcao'].apply(lambda x: "🟩 LONG" if 'LONG' in str(x).upper() else "🟥 SHORT")
-        df_sinais['rompimento'] = "T 30 min"
-        df_sinais.columns = ["Data Alerta", "Nome do Ativo", "Direção", "Rompimento", "Preço", "Volume"]
-        st.dataframe(df_sinais, use_container_width=True, hide_index=True)
-    else:
-        st.info("Aguardando os novos sinais do robô na nuvem...")
+df_sinais = carregar_sinais()
+if df_sinais is not None and not df_sinais.empty:
+    st.dataframe(df_sinais, use_container_width=True, hide_index=True)
+else:
+    st.info("Aguardando os novos sinais do robô na nuvem...")
 
 elif st.session_state.pagina_atual == "relatorios":
     st.markdown("<h1 style='color: #111111;'>Histórico de Relatórios Diários (21h)</h1>", unsafe_allow_html=True)
