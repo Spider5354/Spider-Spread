@@ -10,7 +10,7 @@ st.set_page_config(page_title="Spider Spread - Painel de Sinais", layout="wide")
 # STRING DE CONEXÃO DA SUPABASE (CORRIGIDA)
 # ==========================================
 # Ajustado para postgresql:// e usando o Pooler oficial da Supabase porta 6543
-DB_URL_NUVEM = "postgresql://postgres:Spider%40Cmc5354@db.azyrogbqlgeknojszgua.supabase.co:5432/postgres"
+DB_URL_NUVEM = "postgresql://postgres:Spider%40Cmc5354@15.228.243.149:6543/postgres"
 
 # Definição da senha de acesso VIP do painel
 SENHA_CORRETA = "Spider@VIP5354"
