@@ -25,8 +25,7 @@ st.stop()
 st.markdown("section[data-testid='stSidebar'] { background-image: linear-gradient(180deg, #4da6ff 0%, #003366 100%) !important; background-color: #4da6ff !important; } .historico-carlos { color: #ffffff !important; font-size: 15px !important; font-weight: bold !important; text-align: center; margin-top: 20px; } .stApp { background-color: #fff2f2 !important; } div.stButton > button { background-color: #ff000d !important; color: #ffffff !important; border-radius: 8px !important; border: 1px solid #ff4d55 !important; font-weight: bold !important; font-size: 16px !important; padding: 10px 20px !important; box-shadow: 0px 4px 10px rgba(0,0,0,0.3) !important; transition: 0.3s !important; } div.stButton > button:hover { background-color: #b30009 !important; color: #ffffff !important; border-color: #b30009 !important; }", unsafe_allow_html=True)
 with st.sidebar:
 st.markdown("🕷️Spider Spread", unsafe_allow_html=True)
-st.markdown("
-", unsafe_allow_html=True)
+st.markdown("<style>section[data-testid='stSidebar'] { background-image: linear-gradient(180deg, #4da6ff 0%, #003366 100%) !important; background-color: #4da6ff !important; } .historico-carlos { color: #ffffff !important; font-size: 15px !important; font-weight: bold !important; text-align: center; margin-top: 20px; } .stApp { background-color: #fff2f2 !important; } div.stButton > button { background-color: #ff000d !important; color: #ffffff !important; border-radius: 8px !important; border: 1px solid #ff4d55 !important; font-weight: bold !important; font-size: 16px !important; padding: 10px 20px !important; box-shadow: 0px 4px 10px rgba(0,0,0,0.3) !important; transition: 0.3s !important; } div.stButton > button:hover { background-color: #b30009 !important; color: #ffffff !important; border-color: #b30009 !important; }</style>", unsafe_allow_html=True)
 st.markdown("", unsafe_allow_html=True)
 if st.button("📢 Alertas", key="btn_alertas_curto", use_container_width=True):
 st.session_state.pagina_atual = "alertas"
@@ -36,10 +35,6 @@ st.session_state.pagina_atual = "relatorios"
 st.rerun()
 st.markdown("", unsafe_allow_html=True)
 st.markdown("
-
-
-
-
 ", unsafe_allow_html=True)
 st.markdown("", unsafe_allow_html=True)
 st.markdown("📋 Histórico de Carlos Caldeira", unsafe_allow_html=True)
