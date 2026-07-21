@@ -37,7 +37,7 @@ if not st.session_state.autenticado:
         if botao_entrar:
             if senha_digitada == SENHA_CORRETA:
                 st.session_state.autenticado = True
-                st.success("Acesso authorized com sucesso! Carregando...")
+                st.success("Acesso autorizado com sucesso! Carregando...")
                 time.sleep(1)
                 st.rerun()
             else:
@@ -96,22 +96,23 @@ with st.sidebar:
     st.markdown("<div class='historico-carlos' translate='no'>📋 Histórico de Carlos Caldeira</div>", unsafe_allow_html=True)
 
 # ==========================================
-# FUNÇÕES DE BUSCA VIA API REST
+# FUNÇÕES DE BUSCA VIA API REST (CHAVE ATUALIZADA)
 # ==========================================
 def carregar_dados_api(tabela):
     try:
         url = f"https://supabase.co{tabela}"
+        nova_chave = "sb_publishable_gBU-BMvqUKIoTlXppK1_NA_SCQDl_OL"
+        
         headers = {
-            "apikey": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF6eXJvZ2JxbGdla25vanN6Z3VhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MTkwMjc0NDMsImV4cCI6MjAzNDYwMzQ0M30.4M3N1X2Z_vX8F7-9z_fWf3b8_Yt9_M2v_u1_X9_Z8_Y",
-            "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF6eXJvZ2JxbGdla25vanN6Z3VhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MTkwMjc0NDMsImV4cCI6MjAzNDYwMzQ0M30.4M3N1X2Z_vX8F7-9z_fWf3b8_Yt9_M2v_u1_X9_Z8_Y"
+            "apikey": nova_chave,
+            "Authorization": f"Bearer {nova_chave}"
         }
-        # Removemos o parâmetro "params" que forçava a ordenação pelo ID
+        
         response = requests.get(url, headers=headers, timeout=10)
         if response.status_code == 200:
             dados = response.json()
             if dados and len(dados) > 0:
                 df = pd.DataFrame(dados)
-                # Ordena os sinais de forma manual no Python usando a data
                 if "data_alerta" in df.columns:
                     df = df.sort_values(by="data_alerta", ascending=False)
                 return df
@@ -165,10 +166,10 @@ elif st.session_state.pagina_atual == "relatorios":
         linha_selecionada = df_repor[df_repor['data_relatorio'] == data_selecionada]
         
         if not linha_selecionada.empty:
-            l_longs = linha_selecionada['longs'].values[0]
-            l_shorts = linha_selecionada['shorts'].values[0]
-            l_total = linha_selecionada['total'].values[0]
-            l_detalhes = linha_selecionada['detalhes'].values[0]
+            l_longs = linha_selecionada['longs'].values
+            l_shorts = linha_selecionada['shorts'].values
+            l_total = linha_selecionada['total'].values
+            l_detalhes = linha_selecionada['detalhes'].values
             
             col1, col2, col3 = st.columns(3)
             with col1:
