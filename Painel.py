@@ -96,42 +96,54 @@ with st.sidebar:
     st.markdown("<div class='historico-carlos' translate='no'>📋 Histórico de Carlos Caldeira</div>", unsafe_allow_html=True)
 
 # ==========================================
-# FUNÇÕES DE BUSCA VIA API REST (CHAVE ATUALIZADA)
+# FUNÇÕES DE BUSCA DE DADOS (CONEXÃO DIRETA VIA PORTA SEGURA 6543)
 # ==========================================
-def carregar_dados_api(tabela):
+import psycopg2
+
+def obter_conexao_direta():
+    # Parâmetros de conexão utilizando o Session Pooler seguro da AWS do Supabase
+    return psycopg2.connect(
+        host="://supabase.com",
+        database="postgres",
+        user="postgres.azyrogbqlgeknojszgua",
+        password="Spider@Cmc5354",
+        port="6543",
+        connect_timeout=15
+    )
+
+def carregar_sinais():
     try:
-        url = f"https://supabase.co{tabela}"
-        nova_chave = "sb_publishable_gBU-BMvqUKIoTlXppK1_NA_SCQDl_OL"
+        conn = obter_conexao_direta()
+        # Lê a tabela sinais e organiza de forma decrescente
+        df = pd.read_sql_query("SELECT data_alerta, ativo, direcao, rompimento, preco, volume FROM sinais ORDER BY id DESC", conn)
+        conn.close()
         
-        headers = {
-            "apikey": nova_chave,
-            "Authorization": f"Bearer {nova_chave}"
-        }
-        
-        response = requests.get(url, headers=headers, timeout=10)
-        if response.status_code == 200:
-            dados = response.json()
-            if dados and len(dados) > 0:
-                df = pd.DataFrame(dados)
-                if "data_alerta" in df.columns:
-                    df = df.sort_values(by="data_alerta", ascending=False)
-                return df
+        if df is not None and not df.empty:
+            # Aplica a formatação visual bonita das colunas diretamente no Pandas
+            df_formatado = pd.DataFrame()
+            df_formatado["Data Alerta"] = df["data_alerta"]
+            df_formatado["Nome do Ativo"] = df["ativo"]
+            df_formatado["Direção"] = df["direcao"].apply(lambda x: "🟩 LONG" if 'LONG' in str(x).upper() else "🟥 SHORT")
+            df_formatado["Rompimento"] = "T 30 min"
+            df_formatado["Preço"] = df["preco"]
+            df_formatado["Volume"] = df["volume"]
+            return df_formatado
+        return pd.DataFrame()
+    except Exception as e:
+        # Se falhar temporariamente por oscilação de rede, avisa de forma amigável
+        st.warning(f"Sincronizando banco de dados... (Detalhe: {e})")
+        return pd.DataFrame()
+
+def carregar_relatorios():
+    try:
+        conn = obter_conexao_direta()
+        df = pd.read_sql_query("SELECT id, data_relatorio, longs, shorts, total, detalhes FROM relatorios ORDER BY id DESC", conn)
+        conn.close()
+        if df is not None and len(df) > 0:
+            return df
         return pd.DataFrame()
     except Exception:
         return pd.DataFrame()
-
-def carregar_sinais():
-    df = carregar_dados_api("sinais")
-    if df is not None and not df.empty:
-        # Se vier qualquer dado da API, joga direto na tela para vermos
-        return df
-    return pd.DataFrame()
-
-def carregar_relatorios():
-    df = carregar_dados_api("relatorios")
-    if df is not None and not df.empty:
-        return df
-    return pd.DataFrame()
 
 # ==========================================
 # RENDERIZAÇÃO DA TELA SELECIONADA
@@ -143,6 +155,7 @@ if st.session_state.pagina_atual == "alertas":
 
     df_sinais = carregar_sinais()
     if df_sinais is not None and not df_sinais.empty:
+        # Exibe a tabela formatada de forma direta na tela
         st.dataframe(df_sinais, use_container_width=True, hide_index=True)
     else:
         st.info("Aguardando os novos sinais do robô na nuvem...")
