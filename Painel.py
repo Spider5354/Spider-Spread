@@ -101,7 +101,7 @@ with st.sidebar:
 import psycopg2
 
 def obter_conexao_direta():
-    # Endereço limpo e sem caracteres ocultos do pooler do seu projeto
+    # Parâmetros inseridos diretamente como texto para não depender dos Secrets travados
     return psycopg2.connect(
         host="://supabase.com",
         database="postgres",
