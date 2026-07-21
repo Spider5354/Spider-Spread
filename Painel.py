@@ -101,7 +101,7 @@ with st.sidebar:
 import psycopg2
 
 def obter_conexao_direta():
-    # Parâmetros de conexão utilizando o Session Pooler seguro da AWS do Supabase
+    # Endereço limpo e sem caracteres ocultos do pooler do seu projeto
     return psycopg2.connect(
         host="://supabase.com",
         database="postgres",
