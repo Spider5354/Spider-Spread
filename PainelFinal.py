@@ -4,8 +4,10 @@ import time
 import psycopg2
 st.set_page_config(page_title="Spider Spread - Painel de Sinais", layout="wide")
 SENHA_CORRETA = "SpiderVIP.5354"
-if "autenticado" not in st.session_state: st.session_state.autenticado = False
-if "pagina_atual" not in st.session_state: st.session_state.pagina_atual = "alertas"
+if "autenticado" not in st.session_state:
+st.session_state.autenticado = False
+if "pagina_atual" not in st.session_state:
+st.session_state.pagina_atual = "alertas"
 if not st.session_state.autenticado:
 st.markdown("🕷️Spider Spread VIPEste é um painel privado. Digite a credencial para liberar os sinais.", unsafe_allow_html=True)
 with st.form("formulario_login", clear_on_submit=True):
