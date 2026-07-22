@@ -3,12 +3,17 @@ import pandas as pd
 import time
 import psycopg2
 
+# Configuração da página web (Layout Expandido)
 st.set_page_config(page_title="Spider Spread - Painel de Sinais", layout="wide")
+
 SENHA_CORRETA = "SpiderVIP.5354"
 
 if "autenticado" not in st.session_state: st.session_state.autenticado = False
 if "pagina_atual" not in st.session_state: st.session_state.pagina_atual = "alertas"
 
+# ==========================================
+# TELA DE LOGIN (BLOQUEIO DE ACESSO VIP)
+# ==========================================
 if not st.session_state.autenticado:
     st.markdown("<div style='text-align: center; margin-top: 50px;' translate='no'><div style='font-size: 100px; line-height: 1.1; margin-bottom: 20px;'>🕷️</div><h1 style='color: #ff000d; font-family: Arial Black, Gadget, sans-serif; letter-spacing: 2px;'>Spider Spread VIP</h1><p style='color: #666666;'>Este é um painel privado. Digite a credencial para liberar os sinais.</p></div>", unsafe_allow_html=True)
     with st.form("formulario_login", clear_on_submit=True):
@@ -22,8 +27,14 @@ if not st.session_state.autenticado:
             else: st.error("❌ Senha incorreta! Caso tenha esquecido, entre em contato com o administrador.")
     st.stop()
 
+# ==========================================
+# CUSTOMIZAÇÃO ESTÉTICA VISUAL (CSS)
+# ==========================================
 st.markdown("<style>section[data-testid='stSidebar'] { background-image: linear-gradient(180deg, #4da6ff 0%, #003366 100%) !important; background-color: #4da6ff !important; } .historico-carlos { color: #ffffff !important; font-size: 15px !important; font-weight: bold !important; text-align: center; margin-top: 20px; } .stApp { background-color: #fff2f2 !important; } div.stButton > button { background-color: #ff000d !important; color: #ffffff !important; border-radius: 8px !important; border: 1px solid #ff4d55 !important; font-weight: bold !important; font-size: 16px !important; padding: 10px 20px !important; box-shadow: 0px 4px 10px rgba(0,0,0,0.3) !important; transition: 0.3s !important; } div.stButton > button:hover { background-color: #b30009 !important; color: #ffffff !important; border-color: #b30009 !important; }</style>", unsafe_allow_html=True)
 
+# ==========================================
+# MENU LATERAL PERSONALIZADO (SIDEBAR)
+# ==========================================
 with st.sidebar:
     st.markdown("<div style='text-align: center;' translate='no'><div style='font-size: 80px; line-height: 1.1; margin-bottom: 10px; filter: drop-shadow(0px 4px 8px rgba(0,0,0,0.5));'>🕷️</div><h2 style='color: #ffffff; font-family: Arial Black, Gadget, sans-serif; letter-spacing: 1.5px; margin-top: 0px; margin-bottom: 0px;'>Spider Spread</h2></div>", unsafe_allow_html=True)
     st.markdown("<br><hr style='border-color: rgba(255,255,255,0.3);'>", unsafe_allow_html=True)
@@ -39,6 +50,9 @@ with st.sidebar:
     st.markdown("<hr style='border-color: rgba(255,255,255,0.2);'>", unsafe_allow_html=True)
     st.markdown("<div class='historico-carlos' translate='no'>📋 Histórico de Carlos Caldeira</div>", unsafe_allow_html=True)
 
+# ==========================================
+# FUNÇÃO DE CONEXÃO DIRETA COM O SUPABASE
+# ==========================================
 def obter_conexao_segura():
     return psycopg2.connect(
         host="://supabase.com",
@@ -52,24 +66,17 @@ def obter_conexao_segura():
 
 def carregar_sinais():
     try:
-        # Sobrescrevemos o gerenciador com os dados corretos da AWS
-        conn = psycopg2.connect(
-            host="://supabase.com",
-            database="postgres",
-            user="postgres.azyrogbqlgeknojszgua",
-            password="Spider@Cmc5354",
-            port="6543",
-            connect_timeout=15,
-            sslmode="require"
-        )
+        conn = obter_conexao_segura()
         df = pd.read_sql_query("SELECT data_alerta, ativo, direcao, rompimento, preco, volume FROM sinais ORDER BY id DESC", conn)
         conn.close()
         if df is not None and not df.empty:
             df_formatado = pd.DataFrame()
             df_formatado["Data Alerta"] = df["data_alerta"] if "data_alerta" in df.columns else ""
             df_formatado["Nome do Ativo"] = df["ativo"] if "ativo" in df.columns else ""
-            if "direcao" in df.columns: df_formatado["Direção"] = df["direcao"].apply(lambda x: "🟩 LONG" if 'LONG' in str(x).upper() else "🟥 SHORT")
-            else: df_formatado["Direção"] = ""
+            if "direcao" in df.columns: 
+                df_formatado["Direção"] = df["direcao"].apply(lambda x: "🟩 LONG" if 'LONG' in str(x).upper() else "🟥 SHORT")
+            else: 
+                df_formatado["Direção"] = ""
             df_formatado["Rompimento"] = "T 30 min"
             df_formatado["Preço"] = df["preco"] if "preco" in df.columns else 0.0
             df_formatado["Volume"] = df["volume"] if "volume" in df.columns else ""
@@ -85,15 +92,21 @@ def carregar_relatorios():
         df = pd.read_sql_query("SELECT id, data_relatorio, longs, shorts, total, detalhes FROM relatorios ORDER BY id DESC", conn)
         conn.close()
         return df if df is not None and len(df) > 0 else pd.DataFrame()
-    except Exception: return pd.DataFrame()
+    except Exception: 
+        return pd.DataFrame()
 
+# ==========================================
+# CONTROLADOR OPERACIONAL DE TELAS
+# ==========================================
 if st.session_state.pagina_atual == "alertas":
     st.markdown("<h1 style='color: #111111;' translate='no'>Alertas Milionários</h1>", unsafe_allow_html=True)
     st.caption("Acompanhamento de rompimentos de pivot e pullbacks por zona sincronizados com o robô Python na Nuvem")
     st.markdown("<br>", unsafe_allow_html=True)
     df_sinais = carregar_sinais()
-    if df_sinais is not None and not df_sinais.empty: st.dataframe(df_sinais, use_container_width=True, hide_index=True)
-    else: st.info("Aguardando os novos sinais do robô na nuvem...")
+    if df_sinais is not None and not df_sinais.empty: 
+        st.dataframe(df_sinais, use_container_width=True, hide_index=True)
+    else: 
+        st.info("Aguardando os novos sinais do robô na nuvem...")
 
 elif st.session_state.pagina_atual == "relatorios":
     st.markdown("<h1 style='color: #111111;'>Histórico de Relatórios Diários (21h)</h1>", unsafe_allow_html=True)
@@ -110,13 +123,15 @@ elif st.session_state.pagina_atual == "relatorios":
             l_total = linha_selecionada['total'].values
             l_detalhes = linha_selecionada['detalhes'].values
             col1, col2, col3 = st.columns(3)
-            with col1: st.metric("🟩 Sinais LONG", str(l_longs))
-            with col2: st.metric("🔴 Sinais SHORT", str(l_shorts))
-            with col3: st.metric("🔢 Total do Dia", str(l_total))
+            with col1: st.metric("🟩 Sinais LONG", str(l_longs[0]))
+            with col2: st.metric("🔴 Sinais SHORT", str(l_shorts[0]))
+            with col3: st.metric("🔢 Total do Dia", str(l_total[0]))
             st.markdown("---")
             st.markdown(f"### 📋 Ativos Operados em {data_selecionada}:")
-            st.text(l_detalhes)
-    else: st.info("Ainda não há relatórios gravados às 21h pelo robô Python.")
+            st.text(l_detalhes[0])
+    else: 
+        st.info("Ainda não há relatórios gravados às 21h pelo robô Python.")
 
+# Auto-refresh de 10 segundos
 time.sleep(10)
 st.rerun()
