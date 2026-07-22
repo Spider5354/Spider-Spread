@@ -2,17 +2,14 @@ import streamlit as st
 import pandas as pd
 import time
 import psycopg2
-st.set_page_config(page_title="Spider Spread", layout="wide")
+st.set_page_config(page_title="Spider Spread - Painel de Sinais", layout="wide")
 SENHA_CORRETA = "SpiderVIP.5354"
-if "autenticado" not in st.session_state:
-st.session_state.autenticado = False
-if "pagina_atual" not in st.session_state:
-st.session_state.pagina_atual = "alertas"
+if "autenticado" not in st.session_state: st.session_state.autenticado = False
+if "pagina_atual" not in st.session_state: st.session_state.pagina_atual = "alertas"
 if not st.session_state.autenticado:
-st.title("🕷️ Spider Spread VIP")
-st.write("Este é um painel privado. Digite a credencial para liberar os sinais.")
+st.markdown("🕷️Spider Spread VIPEste é um painel privado. Digite a credencial para liberar os sinais.", unsafe_allow_html=True)
 with st.form("formulario_login", clear_on_submit=True):
-senha_digitada = st.text_input("🔑 Senha de Acesso:", type="password")
+senha_digitada = st.text_input("🔑 Senha de Acesso:", type="password", placeholder="Digite a chave privada aqui...")
 botao_entrar = st.form_submit_button("Liberar Painel Operational", use_container_width=True)
 if botao_entrar:
 if senha_digitada == SENHA_CORRETA:
@@ -21,22 +18,21 @@ st.success("Acesso autorizado com sucesso! Carregando...")
 time.sleep(1)
 st.rerun()
 else:
-st.error("❌ Senha incorreta!")
+st.error("❌ Senha incorreta! Caso tenha esquecido, entre em contato com o administrador.")
 st.stop()
+st.markdown("section[data-testid='stSidebar'] { background-image: linear-gradient(180deg, #4da6ff 0%, #003366 100%) !important; background-color: #4da6ff !important; } .historico-carlos { color: #ffffff !important; font-size: 15px !important; font-weight: bold !important; text-align: center; margin-top: 20px; } .stApp { background-color: #fff2f2 !important; } div.stButton > button { background-color: #ff000d !important; color: #ffffff !important; border-radius: 8px !important; border: 1px solid #ff4d55 !important; font-weight: bold !important; font-size: 16px !important; padding: 10px 20px !important; box-shadow: 0px 4px 10px rgba(0,0,0,0.3) !important; transition: 0.3s !important; } div.stButton > button:hover { background-color: #b30009 !important; color: #ffffff !important; border-color: #b30009 !important; }", unsafe_allow_html=True)
 with st.sidebar:
-st.title("🕷️ Spider Spread")
-st.write("---")
-if st.button("📢 Alertas", key="btn_alertas", use_container_width=True):
+st.markdown("🕷️Spider Spread", unsafe_allow_html=True)
+st.markdown("
+", unsafe_allow_html=True)
+st.markdown("", unsafe_allow_html=True)
+if st.button("📢 Alertas", key="btn_alertas_curto", use_container_width=True):
 st.session_state.pagina_atual = "alertas"
 st.rerun()
-if st.button("📊 Relatórios", key="btn_relatorios", use_container_width=True):
+if st.button("📊 Relatórios", key="btn_relatorios_curto", use_container_width=True):
 st.session_state.pagina_atual = "relatorios"
 st.rerun()
-st.write("
-
-
-
-
-", unsafe_allow_html=True)
-st.write("---")
-st.info("📋 Histórico de Carlos Caldeira")
+st.markdown("", unsafe_allow_html=True)
+st.markdown("", unsafe_allow_html=True)
+st.markdown("", unsafe_allow_html=True)
+st.markdown("📋 Histórico de Carlos Caldeira", unsafe_allow_html=True)
