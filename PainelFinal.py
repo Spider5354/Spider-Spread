@@ -52,7 +52,16 @@ def obter_conexao_segura():
 
 def carregar_sinais():
     try:
-        conn = obter_conexao_segura()
+        # Sobrescrevemos o gerenciador com os dados corretos da AWS
+        conn = psycopg2.connect(
+            host="://supabase.com",
+            database="postgres",
+            user="postgres.azyrogbqlgeknojszgua",
+            password="Spider@Cmc5354",
+            port="6543",
+            connect_timeout=15,
+            sslmode="require"
+        )
         df = pd.read_sql_query("SELECT data_alerta, ativo, direcao, rompimento, preco, volume FROM sinais ORDER BY id DESC", conn)
         conn.close()
         if df is not None and not df.empty:
